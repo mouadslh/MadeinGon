@@ -34,11 +34,24 @@ async def list_products(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     category_id: Optional[int] = None,
-    category_slug: Optional[str] = None,
+    category_slug: Optional[str] = Query(None, alias="category"),
+    category_slug_legacy: Optional[str] = Query(None, alias="category_slug"),
     search: Optional[str] = None,
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
+    verified: Optional[bool] = Query(
+        None,
+        description="Si true, ne renvoie que les produits avec badge GON",
+    ),
+    region: Optional[str] = Query(None, description="Filtre sur la ville du vendeur"),
+    sort_by: str = Query(
+        "recent",
+        description="recent | price_asc | price_desc | popular",
+    ),
 ):
+    # Backward compat : accepter ?category= OU ?category_slug=
+    effective_category_slug = category_slug or category_slug_legacy
+
     q = (
         select(Product)
         .options(selectinload(Product.images))
@@ -48,9 +61,9 @@ async def list_products(
             Product.status == "approved",
         )
     )
-    if category_slug:
+    if effective_category_slug:
         cat_row = await db.execute(
-            select(Category.id).where(Category.slug == category_slug)
+            select(Category.id).where(Category.slug == effective_category_slug)
         )
         cid = cat_row.scalar_one_or_none()
         if cid:
@@ -63,21 +76,34 @@ async def list_products(
             or_(
                 Product.title_fr.ilike(pattern),
                 Product.description_fr.ilike(pattern),
+                Product.title_ar.ilike(pattern),
             )
         )
     if min_price is not None:
         q = q.where(Product.price >= Decimal(str(min_price)))
     if max_price is not None:
         q = q.where(Product.price <= Decimal(str(max_price)))
+    if verified:
+        q = q.where(Product.authenticity_badge.is_not(None))
+    if region:
+        q = q.join(SellerProfile, SellerProfile.id == Product.seller_id).where(
+            or_(SellerProfile.city.ilike(region), SellerProfile.region.ilike(region))
+        )
 
     count_q = select(func.count()).select_from(q.subquery())
     total = await db.scalar(count_q) or 0
 
-    q = (
-        q.offset((page - 1) * page_size)
-        .limit(page_size)
-        .order_by(Product.created_at.desc())
-    )
+    # Tri
+    if sort_by == "price_asc":
+        q = q.order_by(Product.price.asc())
+    elif sort_by == "price_desc":
+        q = q.order_by(Product.price.desc())
+    elif sort_by == "popular":
+        q = q.order_by(Product.views_count.desc(), Product.created_at.desc())
+    else:
+        q = q.order_by(Product.created_at.desc())
+
+    q = q.offset((page - 1) * page_size).limit(page_size)
     items = (await db.execute(q)).scalars().all()
 
     return ProductListResponse(

@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from app.core.database import AsyncSessionLocal
 from app.core.security import hash_password
@@ -36,6 +36,7 @@ async def seed():
                 password_hash=hash_password("seller12345"),
                 full_name="Fatima Artisan",
                 role="SELLER",
+                seller_status="active",
                 phone="+212600000001",
             )
             db.add(su)
@@ -77,6 +78,11 @@ async def seed():
                     is_primary=True,
                 )
             )
+        await db.execute(
+            update(User)
+            .where(User.role == "SELLER", User.seller_status.is_(None))
+            .values(seller_status="active")
+        )
         await db.commit()
     print("Demo data seeded.")
 

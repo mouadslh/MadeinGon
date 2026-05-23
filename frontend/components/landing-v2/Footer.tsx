@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { Instagram, Facebook, MessageCircle } from "lucide-react";
+import { Logo } from "@/components/layout/Logo";
 import { FOOTER_NAV, LANG_FLAGS, LANG_LABELS, SUPPORTED_LANGS, type Lang } from "./copy";
 import { usePathname, useRouter } from "next/navigation";
 
-type Props = { locale: "fr" | "ar" };
-
-const SITE_LOCALES = ["fr", "ar"] as const;
+type Props = { locale: Lang };
 
 export function Footer({ locale }: Props) {
   const isRtl = locale === "ar";
@@ -16,7 +15,6 @@ export function Footer({ locale }: Props) {
   const pathname = usePathname();
 
   const handleLang = (lang: Lang) => {
-    if (!SITE_LOCALES.includes(lang as "fr" | "ar")) return;
     const stripped = pathname.replace(/^\/(fr|ar)(?=\/|$)/, "") || "/";
     router.push(`/${lang}${stripped === "/" ? "" : stripped}`);
   };
@@ -29,19 +27,7 @@ export function Footer({ locale }: Props) {
       <div className="max-w-7xl mx-auto px-6 md:px-10 grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-8">
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <svg width="32" height="32" viewBox="0 0 64 64" aria-hidden>
-              <path
-                d="M32 6c-9 14-14 24-14 34 0 9 6 16 14 16s14-7 14-16C46 30 41 20 32 6z"
-                fill="var(--gold-light)"
-              />
-              <path d="M32 14v40" stroke="var(--deep-green)" strokeWidth="1.5" />
-            </svg>
-            <span
-              className="text-xl font-bold"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Made in <span style={{ color: "var(--ocre)" }}>GON</span>
-            </span>
+            <Logo variant="light" size="md" href={`/${locale}`} />
           </div>
           <p
             className="opacity-85 mb-5 leading-relaxed"
@@ -134,24 +120,21 @@ export function Footer({ locale }: Props) {
             >
               {isRtl ? "اللغة" : "Langue"}
             </div>
-            <div className="flex flex-wrap gap-1.5">
-              {SUPPORTED_LANGS.map((lg) => {
-                const isAvail = (SITE_LOCALES as readonly string[]).includes(lg);
-                return (
-                  <button
-                    key={lg}
-                    type="button"
-                    onClick={() => handleLang(lg)}
-                    disabled={!isAvail}
-                    className={`px-2.5 py-1 rounded-full text-xs flex items-center gap-1 transition-colors ${
-                      locale === lg ? "bg-white/15 font-semibold" : "hover:bg-white/10"
-                    } ${!isAvail ? "opacity-50 cursor-not-allowed" : ""}`}
-                  >
-                    <span aria-hidden>{LANG_FLAGS[lg]}</span>
-                    <span>{LANG_LABELS[lg]}</span>
-                  </button>
-                );
-              })}
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Langue">
+              {SUPPORTED_LANGS.map((lg) => (
+                <button
+                  key={lg}
+                  type="button"
+                  onClick={() => handleLang(lg)}
+                  className={`px-2.5 py-1 rounded-full text-xs flex items-center gap-1 transition-colors ${
+                    locale === lg ? "bg-white/15 font-semibold" : "hover:bg-white/10"
+                  }`}
+                  aria-current={locale === lg ? "true" : undefined}
+                >
+                  <span aria-hidden>{LANG_FLAGS[lg]}</span>
+                  <span>{LANG_LABELS[lg]}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>

@@ -31,6 +31,7 @@ class OrderItemResponse(BaseModel):
 
 class OrderResponse(BaseModel):
     id: UUID
+    reference: Optional[str] = None
     buyer_id: UUID
     seller_id: UUID
     address_id: UUID

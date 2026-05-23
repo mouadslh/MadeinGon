@@ -8,7 +8,7 @@ from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.deps import CurrentUser
 from app.core.redis_client import blacklist_refresh_token, is_refresh_blacklisted
-from app.core.security import create_access_token, decode_token
+from app.core.security import create_access_token, create_refresh_token, decode_token
 from app.schemas.auth import (
     LoginRequest,
     OtpSendRequest,
@@ -44,7 +44,7 @@ async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/refresh", response_model=TokenResponse)
-async def refresh(data: RefreshRequest):
+async def refresh(data: RefreshRequest, db: AsyncSession = Depends(get_db)):
     if await is_refresh_blacklisted(data.refresh_token):
         raise HTTPException(status_code=401, detail="Token revoked")
     payload = decode_token(data.refresh_token)
@@ -52,11 +52,15 @@ async def refresh(data: RefreshRequest):
         raise HTTPException(status_code=401, detail="Invalid refresh token")
     from uuid import UUID
 
+    from app.models.user import User
+
     user_id = UUID(payload["sub"])
-    role = payload["role"]
+    user = await db.get(User, user_id)
+    if not user or not user.is_active:
+        raise HTTPException(status_code=401, detail="User not found")
     return TokenResponse(
-        access_token=create_access_token(user_id, role),
-        refresh_token=data.refresh_token,
+        access_token=create_access_token(user.id, user.role),
+        refresh_token=create_refresh_token(user.id, user.role),
     )
 
 
@@ -134,4 +138,8 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
         avatar_url=userinfo.get("picture"),
     )
     frontend = settings.cors_origins_list[0] if settings.cors_origins_list else "http://localhost:3000"
-    return RedirectResponse(f"{frontend}/login?access_token={tokens.access_token}&refresh_token={tokens.refresh_token}")
+    locale = settings.DEFAULT_LANGUAGE if settings.DEFAULT_LANGUAGE in settings.SUPPORTED_LANGUAGES else "fr"
+    return RedirectResponse(
+        f"{frontend}/{locale}/login"
+        f"?access_token={tokens.access_token}&refresh_token={tokens.refresh_token}"
+    )

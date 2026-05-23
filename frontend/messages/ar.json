@@ -207,10 +207,24 @@
     "email": "البريد الإلكتروني",
     "password": "كلمة المرور",
     "phone": "الهاتف",
+    "fullName": "الاسم الكامل",
     "login": "تسجيل الدخول",
     "register": "إنشاء حساب",
     "otpSend": "إرسال الرمز",
-    "otpVerify": "تحقق"
+    "otpVerify": "تحقق",
+    "continueWithGoogle": "المتابعة مع Google",
+    "orWith": "أو عبر",
+    "noAccount": "ليس لديك حساب؟",
+    "haveAccount": "لديك حساب بالفعل؟",
+    "loginCta": "تسجيل الدخول",
+    "registerCta": "إنشاء حساب",
+    "invalidCredentials": "بيانات الدخول غير صحيحة",
+    "registerError": "تعذّر إنشاء الحساب",
+    "otpSendError": "تعذّر إرسال الرمز",
+    "otpInvalid": "الرمز غير صحيح",
+    "tabEmail": "البريد الإلكتروني",
+    "tabSms": "SMS",
+    "loading": "جاري التحميل..."
   },
   "faq": {
     "title": "المساعدة والأسئلة",
@@ -260,6 +274,21 @@
     "next": "التالي",
     "save": "حفظ",
     "actions": "إجراءات"
+  },
+  "badge": {
+    "verifiedByGon": "موثق GON",
+    "verifiedByGonShort": "موثق"
+  },
+  "cart": {
+    "loginRequired": "سجّل الدخول لإضافة المنتج إلى السلة",
+    "loginCta": "تسجيل الدخول",
+    "favoriteLoginRequired": "سجّل الدخول لإضافة المنتج إلى المفضلة"
+  },
+  "favorites": {
+    "title": "المفضلة",
+    "empty": "لا توجد منتجات في المفضلة بعد",
+    "discover": "اكتشف الكتالوج",
+    "count": "{count} في المفضلة"
   },
   "admin": {
     "brand": "صنع في كلميم",
@@ -313,7 +342,6 @@
     },
     "sellers": {
       "title": "البائعون",
-      "cinHint": "عمود البطاقة : صورة مصغرة → نافذة منبثقة، أو فتح مباشر في المتصفح (PDF).",
       "tabApplications": "الطلبات",
       "tabAccounts": "حسابات البائعين",
       "pending": "قيد الانتظار",

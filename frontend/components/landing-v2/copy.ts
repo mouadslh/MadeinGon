@@ -1,30 +1,24 @@
 /**
  * Made in GON — Landing v2 copy
- * All user-facing strings, FR + AR. No Lorem Ipsum.
+ * Toutes les chaînes user-facing, FR + AR uniquement. Pas de Lorem Ipsum.
  */
-export type Lang = "fr" | "ar" | "en" | "es";
+export type Lang = "fr" | "ar";
 
-export const SUPPORTED_LANGS: Lang[] = ["ar", "fr", "en", "es"];
+export const SUPPORTED_LANGS: Lang[] = ["ar", "fr"];
 
 export const LANG_LABELS: Record<Lang, string> = {
   ar: "العربية",
   fr: "Français",
-  en: "English",
-  es: "Español",
 };
 
 export const LANG_FLAGS: Record<Lang, string> = {
   ar: "🇲🇦",
   fr: "🇫🇷",
-  en: "🇬🇧",
-  es: "🇪🇸",
 };
 
-export const ANNOUNCEMENT = {
+export const ANNOUNCEMENT: Record<Lang, string> = {
   fr: "🚚 Livraison vers toutes les provinces de Guelmim-Oued Noun",
   ar: "🚚 توصيل إلى جميع أقاليم جهة كلميم واد نون",
-  en: "🚚 Delivery to all Guelmim-Oued Noun provinces",
-  es: "🚚 Envíos a todas las provincias de Guelmim-Oued Noun",
 };
 
 export const CATEGORIES = [

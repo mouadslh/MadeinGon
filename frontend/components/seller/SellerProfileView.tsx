@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { SellerTabNav } from "./SellerTabNav";
 import { GounFonts } from "@/components/goun/GounFonts";
+import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 
 type Profile = {
   shop_name?: string;
@@ -61,8 +62,8 @@ export function SellerProfileView() {
               <h2 className="font-semibold text-lg">{name || t("Mon atelier", "ورشتي")}</h2>
               <p className="text-sm text-[var(--goun-charcoal)]/60">{city}</p>
               {verified ? (
-                <span className="inline-flex mt-2 px-3 py-1 rounded-full bg-[var(--goun-gold)]/30 text-xs font-medium">
-                  ✅ {t("Artisan vérifié GON", "حرفي موثق GON")}
+                <span className="inline-flex mt-2">
+                  <VerifiedBadge size="md" />
                 </span>
               ) : (
                 <span className="inline-flex mt-2 px-3 py-1 rounded-full bg-[var(--goun-mist)] text-xs">

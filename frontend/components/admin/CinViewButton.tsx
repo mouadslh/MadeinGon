@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ExternalLink, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { isDisplayableCinImage, isCinPdf, normalizeCinUrl } from "@/lib/cin-image";
 
 interface CinViewButtonProps {
   url: string | null | undefined;
@@ -10,16 +11,6 @@ interface CinViewButtonProps {
   missingLabel: string;
   openInBrowserLabel?: string;
   closeLabel?: string;
-}
-
-function isDisplayableImage(url: string): boolean {
-  if (/\.(jpe?g|png|gif|webp|bmp)(\?|$)/i.test(url)) return true;
-  if (url.includes("res.cloudinary.com") && url.includes("/image/upload")) return true;
-  return false;
-}
-
-function isPdf(url: string): boolean {
-  return /\.pdf(\?|$)/i.test(url) || url.includes("/raw/upload") || url.includes("format=pdf");
 }
 
 export function CinViewButton({
@@ -30,8 +21,9 @@ export function CinViewButton({
   closeLabel = "Fermer",
 }: CinViewButtonProps) {
   const [modalOpen, setModalOpen] = useState(false);
+  const resolvedUrl = normalizeCinUrl(url);
 
-  if (!url || !url.startsWith("http")) {
+  if (!resolvedUrl) {
     return (
       <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 whitespace-nowrap">
         {missingLabel}
@@ -40,15 +32,15 @@ export function CinViewButton({
   }
 
   const openExternal = () => {
-    window.open(url, "_blank", "noopener,noreferrer");
+    window.open(resolvedUrl, "_blank", "noopener,noreferrer");
   };
 
   const handleView = () => {
-    if (isPdf(url)) {
+    if (isCinPdf(resolvedUrl)) {
       openExternal();
       return;
     }
-    if (isDisplayableImage(url)) {
+    if (isDisplayableCinImage(resolvedUrl)) {
       setModalOpen(true);
       return;
     }
@@ -58,11 +50,11 @@ export function CinViewButton({
   return (
     <>
       <div className="flex flex-col gap-1.5 items-start">
-        {isDisplayableImage(url) && (
+        {isDisplayableCinImage(resolvedUrl) && (
           <button type="button" onClick={handleView} className="block rounded border border-dune overflow-hidden hover:ring-2 hover:ring-ochre">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={url}
+              src={resolvedUrl}
               alt="CIN"
               className="h-16 w-auto max-w-[140px] object-cover"
               onError={(e) => {
@@ -106,7 +98,7 @@ export function CinViewButton({
             <div className="p-4 overflow-auto flex-1 flex flex-col items-center gap-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={url}
+                src={resolvedUrl}
                 alt="CIN"
                 className="max-w-full max-h-[70vh] object-contain rounded"
               />

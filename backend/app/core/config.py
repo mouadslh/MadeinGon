@@ -17,6 +17,9 @@ class Settings(BaseSettings):
 
     CORS_ORIGINS: str = "http://localhost:3000"
 
+    SUPPORTED_LANGUAGES: List[str] = ["ar", "fr"]
+    DEFAULT_LANGUAGE: str = "fr"
+
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/auth/google/callback"

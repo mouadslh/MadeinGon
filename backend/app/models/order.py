@@ -2,7 +2,9 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, Numeric, String, Text
+from datetime import date
+
+from sqlalchemy import Date, DateTime, ForeignKey, Index, Integer, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -26,6 +28,13 @@ class Order(Base):
     carrier: Mapped[str | None] = mapped_column(String(50), nullable=True)
     tracking_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    reference: Mapped[str | None] = mapped_column(String(30), nullable=True, unique=True)
+    cancel_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    amana_tracking_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    amana_tracking_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    amana_status: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    amana_estimated_delivery: Mapped[date | None] = mapped_column(Date, nullable=True)
+    amana_shipment_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc)
     )

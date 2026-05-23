@@ -10,6 +10,7 @@ from app.routers import (
     auth,
     buyer_addresses,
     categories,
+    favorites,
     orders,
     products,
     search,
@@ -54,6 +55,7 @@ app.include_router(products.router)
 app.include_router(orders.router)
 app.include_router(buyer_addresses.router)
 app.include_router(categories.router)
+app.include_router(favorites.router)
 app.include_router(search.router)
 app.include_router(admin.router)
 app.include_router(ai.router)

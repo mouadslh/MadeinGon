@@ -20,6 +20,8 @@ from app.schemas.order import (
     OrderStatusUpdate,
     TrackingUpdate,
 )
+from app.services.notifications.seller_notif import SellerNotificationService, check_stock_after_sale
+from app.utils.order_helpers import generate_order_reference
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
@@ -71,6 +73,8 @@ async def create_order(data: OrderCreate, user: BuyerUser, db: AsyncSession = De
     )
     db.add(order)
     await db.flush()
+    order.reference = generate_order_reference(order.id, order.created_at)
+
     for product, qty, unit, line in order_items:
         db.add(
             OrderItem(
@@ -81,6 +85,14 @@ async def create_order(data: OrderCreate, user: BuyerUser, db: AsyncSession = De
                 total_price=line,
             )
         )
+
+    notif = SellerNotificationService(db)
+    await notif.notify_new_order(order, order.reference)
+
+    for product, qty, _, _ in order_items:
+        await check_stock_after_sale(db, product.id)
+
+    await db.flush()
     await db.refresh(order, ["items"])
     return _order_response(order)
 

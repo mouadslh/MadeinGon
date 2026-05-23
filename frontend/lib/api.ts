@@ -1,5 +1,5 @@
 import axios from "axios";
-import { clearStoredTokens, getStoredTokens, setStoredTokens } from "./auth";
+import { clearStoredTokens, getStoredTokens, setStoredTokens, syncAccessTokenCookie } from "./auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -33,6 +33,7 @@ api.interceptors.response.use(
             refresh_token: refresh,
           });
           setStoredTokens(data.access_token, data.refresh_token);
+          syncAccessTokenCookie();
           original.headers.Authorization = `Bearer ${data.access_token}`;
           return api(original);
         } catch {

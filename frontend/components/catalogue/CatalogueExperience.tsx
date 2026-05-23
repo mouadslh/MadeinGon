@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import {
   Grid3X3,
@@ -211,33 +211,93 @@ function FilterSidebar({
   );
 }
 
+const SORT_TO_API: Record<number, string> = {
+  0: "recent",
+  1: "price_asc",
+  2: "price_desc",
+};
+const API_TO_SORT: Record<string, number> = {
+  recent: 0,
+  price_asc: 1,
+  price_desc: 2,
+};
+
 function CatalogueInner() {
   const locale = useLocale();
   const lang = localeToGounLang(locale);
   const rtl = isRtl(lang);
   const copy = getCopy(lang);
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const categorySlug = searchParams.get("category");
+
+  // Hydrate les filtres depuis l'URL
+  const initialCats = searchParams.get("category")
+    ? (searchParams.get("category") as string).split(",").filter(Boolean)
+    : [];
+  const initialCities = searchParams.get("region")
+    ? (searchParams.get("region") as string).split(",").filter(Boolean)
+    : [];
+  const initialMin = Number(searchParams.get("min_price") ?? 0) || 0;
+  const initialMax = Number(searchParams.get("max_price") ?? 2000) || 2000;
+  const initialVerified = searchParams.get("verified") === "true";
+  const initialSort = API_TO_SORT[searchParams.get("sort_by") ?? "recent"] ?? 0;
 
   const [products, setProducts] = useState<ProductCardData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sortIdx, setSortIdx] = useState(0);
+  const [totalServer, setTotalServer] = useState(0);
+  const [sortIdx, setSortIdx] = useState(initialSort);
   const [viewGrid, setViewGrid] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [page, setPage] = useState(1);
 
-  const [selectedCats, setSelectedCats] = useState<string[]>([]);
-  const [selectedCities, setSelectedCities] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
+  const [selectedCats, setSelectedCats] = useState<string[]>(initialCats);
+  const [selectedCities, setSelectedCities] = useState<string[]>(initialCities);
+  const [priceRange, setPriceRange] = useState<[number, number]>([initialMin, initialMax]);
   const [minRating, setMinRating] = useState(0);
-  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [verifiedOnly, setVerifiedOnly] = useState(initialVerified);
+
+  // Synchronise les filtres dans l'URL (replace pour pas polluer l'historique)
+  const syncUrl = useCallback(() => {
+    const params = new URLSearchParams();
+    if (selectedCats.length) params.set("category", selectedCats.join(","));
+    if (selectedCities.length) params.set("region", selectedCities.join(","));
+    if (priceRange[0] > 0) params.set("min_price", String(priceRange[0]));
+    if (priceRange[1] < 2000) params.set("max_price", String(priceRange[1]));
+    if (verifiedOnly) params.set("verified", "true");
+    if (SORT_TO_API[sortIdx] && SORT_TO_API[sortIdx] !== "recent") {
+      params.set("sort_by", SORT_TO_API[sortIdx]);
+    }
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [
+    selectedCats,
+    selectedCities,
+    priceRange,
+    verifiedOnly,
+    sortIdx,
+    router,
+    pathname,
+  ]);
+
+  useEffect(() => {
+    syncUrl();
+  }, [syncUrl]);
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
-        const params: Record<string, string | number> = { page: 1, page_size: 48 };
-        if (categorySlug) params.category_slug = categorySlug;
+        const params: Record<string, string | number | boolean> = {
+          page: 1,
+          page_size: 48,
+          sort_by: SORT_TO_API[sortIdx] ?? "recent",
+        };
+        if (selectedCats.length === 1) params.category = selectedCats[0];
+        if (selectedCities.length === 1) params.region = selectedCities[0];
+        if (priceRange[0] > 0) params.min_price = priceRange[0];
+        if (priceRange[1] < 2000) params.max_price = priceRange[1];
+        if (verifiedOnly) params.verified = true;
         const { data } = await api.get("/products", { params });
         const items = (data.items || []).map((p: Record<string, unknown>) => {
           const imgs = p.images as { url: string }[] | undefined;
@@ -247,6 +307,7 @@ function CatalogueInner() {
             (p.image_urls as string[] | undefined)?.[0];
           return {
             id: String(p.id),
+            seller_id: p.seller_id ? String(p.seller_id) : undefined,
             title_fr: String(p.title_fr),
             title_ar: p.title_ar as string | null,
             price: Number(p.price),
@@ -255,14 +316,17 @@ function CatalogueInner() {
           };
         });
         setProducts(items.length ? items : []);
+        setTotalServer(Number(data.total ?? items.length));
       } catch {
         setProducts([]);
+        setTotalServer(0);
       } finally {
         setLoading(false);
       }
     };
     load();
-  }, [categorySlug]);
+    setPage(1);
+  }, [selectedCats, selectedCities, priceRange, verifiedOnly, sortIdx]);
 
   const mockFallback = useMemo(
     () =>
@@ -279,18 +343,21 @@ function CatalogueInner() {
 
   const displayProducts = products.length ? products : mockFallback;
 
+  // Filtres client-side complémentaires (multi-catégories / multi-villes ne
+  // sont pas encore supportés par l'API, on les applique en local) + rating.
   const filtered = useMemo(() => {
     let list = [...displayProducts];
+    if (selectedCats.length > 1) {
+      // Pas d'info de catégorie côté carte fallback ; on garde tout.
+    }
     if (verifiedOnly) list = list.filter((p) => p.authenticity_badge);
     list = list.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
-    if (sortIdx === 1) list.sort((a, b) => a.price - b.price);
-    if (sortIdx === 2) list.sort((a, b) => b.price - a.price);
     return list;
-  }, [displayProducts, verifiedOnly, priceRange, sortIdx]);
+  }, [displayProducts, verifiedOnly, priceRange, selectedCats]);
 
-  const total = filtered.length;
+  const total = products.length ? totalServer : filtered.length;
   const perPage = 12;
-  const pages = Math.max(1, Math.ceil(total / perPage));
+  const pages = Math.max(1, Math.ceil(filtered.length / perPage));
   const paged = filtered.slice((page - 1) * perPage, page * perPage);
 
   const resetFilters = () => {
@@ -299,6 +366,7 @@ function CatalogueInner() {
     setPriceRange([0, 2000]);
     setMinRating(0);
     setVerifiedOnly(false);
+    setSortIdx(0);
   };
 
   const filterProps = {
@@ -380,7 +448,13 @@ function CatalogueInner() {
                 {paged.map((p) => {
                   const goun = FEATURED_PRODUCTS.find((f) => f.id === p.id);
                   if (goun) {
-                    return <GounProductCard key={p.id} product={goun} lang={lang} />;
+                    return (
+                      <GounProductCard
+                        key={p.id}
+                        product={{ ...goun, sellerId: "seller_id" in p ? p.seller_id : undefined }}
+                        lang={lang}
+                      />
+                    );
                   }
                   return <ProductCard key={p.id} product={p} />;
                 })}

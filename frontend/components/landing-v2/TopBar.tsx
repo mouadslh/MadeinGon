@@ -1,14 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LANG_FLAGS, LANG_LABELS, SUPPORTED_LANGS, ANNOUNCEMENT, type Lang } from "./copy";
 
-const SITE_LOCALES = ["fr", "ar"] as const;
-
-function getLocaleFromPath(path: string): "fr" | "ar" {
+function getLocaleFromPath(path: string): Lang {
   const m = path.match(/^\/(fr|ar)(?=\/|$)/);
-  return (m?.[1] as "fr" | "ar") ?? "fr";
+  return (m?.[1] as Lang) ?? "fr";
 }
 
 export function TopBar() {
@@ -18,9 +15,6 @@ export function TopBar() {
   const announcement = ANNOUNCEMENT[currentLocale];
 
   const handleLangChange = (lang: Lang) => {
-    if (!SITE_LOCALES.includes(lang as "fr" | "ar")) {
-      return;
-    }
     const stripped = pathname.replace(/^\/(fr|ar)(?=\/|$)/, "") || "/";
     router.push(`/${lang}${stripped === "/" ? "" : stripped}`);
   };
@@ -35,21 +29,20 @@ export function TopBar() {
           {announcement}
         </span>
 
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1 shrink-0" role="group" aria-label="Langue">
           {SUPPORTED_LANGS.map((lang) => {
             const isActive = currentLocale === lang;
-            const isAvailable = (SITE_LOCALES as readonly string[]).includes(lang);
             return (
               <button
                 key={lang}
                 type="button"
                 onClick={() => handleLangChange(lang)}
-                disabled={!isAvailable}
                 className={`px-2 py-1 rounded-full text-xs transition-colors flex items-center gap-1 ${
                   isActive ? "bg-white/15 font-semibold" : "hover:bg-white/10"
-                } ${!isAvailable ? "opacity-50 cursor-not-allowed" : ""}`}
-                aria-label={`Switch to ${LANG_LABELS[lang]}`}
-                title={!isAvailable ? "Bientôt disponible" : LANG_LABELS[lang]}
+                }`}
+                aria-label={`Changer la langue : ${LANG_LABELS[lang]}`}
+                aria-current={isActive ? "true" : undefined}
+                title={LANG_LABELS[lang]}
               >
                 <span aria-hidden>{LANG_FLAGS[lang]}</span>
                 <span className="hidden sm:inline">{LANG_LABELS[lang]}</span>

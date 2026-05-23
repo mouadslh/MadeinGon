@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import { clearStoredTokens } from "@/lib/auth";
 import { api } from "@/lib/api";
+import { useCartStore } from "@/lib/cart-store";
 
 export default function LogoutPage() {
   const params = useParams();
@@ -15,7 +16,9 @@ export default function LogoutPage() {
       api.post("/auth/logout", { refresh_token: refresh }).catch(() => {});
     }
     clearStoredTokens();
-    window.location.replace(`/${locale}/auth/login`);
+    useCartStore.getState().bindUser(null);
+    document.cookie = "access_token=; path=/; max-age=0; SameSite=Lax";
+    window.location.replace(`/${locale}/login`);
   }, [locale]);
 
   return (

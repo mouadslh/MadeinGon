@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { ShoppingCart, User, Search } from "lucide-react";
+import { ShoppingCart, User, Search, Heart } from "lucide-react";
 import { LanguageSwitcher } from "@/components/goun/LanguageSwitcher";
+import { Logo } from "@/components/layout/Logo";
 import { useCartStore } from "@/lib/cart-store";
 import { getRoleFromToken, isAuthenticated, syncAccessTokenCookie, type UserRole } from "@/lib/auth";
 import { localeToGounLang } from "@/lib/goun-copy";
@@ -25,7 +26,6 @@ export function Navbar() {
     syncAccessTokenCookie();
     setRole(getRoleFromToken());
     setLoggedIn(isAuthenticated());
-    useCartStore.persist.rehydrate();
   }, [pathname]);
 
   const displayCount = mounted ? itemCount : 0;
@@ -37,9 +37,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-[var(--surface-card)] border-b border-dune/50 shadow-sm">
       <nav className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-2 min-h-tap">
-        <Link href={`/${locale}`} className="font-display text-xl sm:text-2xl text-ochre font-bold shrink-0">
-          Made in GON
-        </Link>
+        <Logo size="md" />
+
 
         <div className="hidden md:flex flex-1 max-w-md mx-4">
           <div className="relative w-full">
@@ -58,7 +57,18 @@ export function Navbar() {
           <Link href={`/${locale}/catalogue`} className="hidden sm:flex text-night hover:text-ochre min-h-tap items-center text-sm">
             {t("catalogue")}
           </Link>
-          <div
+          {isLoggedIn && (
+            <Link
+              href={`/${locale}/favoris`}
+              className="relative min-h-tap p-2"
+              aria-label="Favoris"
+              title="Favoris"
+            >
+              <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
+            </Link>
+          )}
+          <Link
+            href={`/${locale}/cart`}
             className="relative min-h-tap p-2"
             aria-label={t("cart")}
             title={t("cart")}
@@ -69,7 +79,7 @@ export function Navbar() {
                 {displayCount}
               </span>
             )}
-          </div>
+          </Link>
           {isLoggedIn ? (
             <>
               {isAdmin ? (

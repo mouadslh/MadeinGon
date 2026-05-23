@@ -5,6 +5,7 @@ import { useLocale } from "next-intl";
 import { X } from "lucide-react";
 import { RemoteImage } from "@/components/ui/RemoteImage";
 import { Button } from "@/components/ui/Button";
+import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 import { api, formatPrice } from "@/lib/api";
 import { getImageUrl } from "@/lib/product-image";
 
@@ -187,7 +188,7 @@ export function AdminProductDetailModal({
               </p>
               <p>
                 {detail.seller?.cin_verified ? (
-                  <span className="text-[var(--goun-forest)]">✅ {t("Artisan vérifié GON", "حرفي موثق GON")}</span>
+                  <VerifiedBadge size="sm" />
                 ) : (
                   <span>⏳ {t("Vérification en attente", "في انتظار التوثيق")}</span>
                 )}

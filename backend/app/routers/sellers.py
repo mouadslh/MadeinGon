@@ -20,6 +20,7 @@ from app.schemas.seller import (
 )
 from app.services.seller_authenticity import compute_seller_authenticity
 from app.services.upload_service import upload_file
+from app.utils.cin_url import is_valid_cin_url
 
 router = APIRouter(prefix="/sellers", tags=["sellers"])
 
@@ -44,6 +45,9 @@ async def apply_seller(
     if pending:
         raise HTTPException(status_code=400, detail="Application already pending")
 
+    if not is_valid_cin_url(data.cin_image_url):
+        raise HTTPException(status_code=400, detail="Valid CIN image URL required")
+
     app = SellerApplication(
         user_id=user.id,
         status="PENDING",
@@ -53,6 +57,8 @@ async def apply_seller(
         shop_name=data.shop_name,
     )
     db.add(app)
+    if user.role != "SELLER":
+        user.seller_status = "pending"
     await db.flush()
     return app
 
@@ -149,6 +155,19 @@ async def upload_my_cin(
             "cin_url": url,
             "seller_profile_id": str(profile.id),
         }
+
+    pending = (
+        await db.execute(
+            select(SellerApplication).where(
+                SellerApplication.user_id == user.id,
+                SellerApplication.status == "PENDING",
+            )
+        )
+    ).scalar_one_or_none()
+    if pending:
+        pending.cin_image_url = url
+        await db.flush()
+
     return {
         "cin_url": url,
         "message": "Use this URL in your seller application",

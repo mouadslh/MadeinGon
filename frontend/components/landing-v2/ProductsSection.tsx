@@ -3,12 +3,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { Heart, Plus, MapPin, Star } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { isAuthenticated } from "@/lib/auth";
+import { useCartStore } from "@/lib/cart-store";
+import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 
 type Props = { locale: "fr" | "ar" };
 
 type ApiProduct = {
   id: string;
+  seller_id?: string;
   slug?: string;
   title_fr?: string;
   title_ar?: string;
@@ -26,6 +32,7 @@ type ApiProduct = {
 
 type FrontProduct = {
   id: string;
+  sellerId?: string;
   slug: string;
   title_fr: string;
   title_ar: string;
@@ -95,6 +102,7 @@ function normalize(p: ApiProduct): FrontProduct {
     "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=600&q=80";
   return {
     id: p.id,
+    sellerId: p.seller_id,
     slug: p.slug ?? p.id,
     title_fr: p.title_fr ?? p.name_fr ?? "Produit",
     title_ar: p.title_ar ?? p.name_ar ?? "منتج",
@@ -109,8 +117,18 @@ function normalize(p: ApiProduct): FrontProduct {
 
 export function ProductsSection({ locale }: Props) {
   const isRtl = locale === "ar";
+  const router = useRouter();
+  const pathname = usePathname();
+  const tCart = useTranslations("cart");
+  const addItem = useCartStore((s) => s.addItem);
   const [products, setProducts] = useState<FrontProduct[]>(FALLBACK_PRODUCTS);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [authed, setAuthed] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  useEffect(() => {
+    setAuthed(isAuthenticated());
+  }, [pathname]);
 
   useEffect(() => {
     const url =
@@ -125,12 +143,34 @@ export function ProductsSection({ locale }: Props) {
       .catch(() => undefined);
   }, []);
 
+  const requireAuth = (msg: string): boolean => {
+    if (authed) return true;
+    setFeedback(msg);
+    setTimeout(() => {
+      const redirect = encodeURIComponent(pathname || `/${locale}`);
+      router.push(`/${locale}/login?redirect=${redirect}`);
+    }, 900);
+    return false;
+  };
+
   const toggleFav = (id: string) => {
+    if (!requireAuth(tCart("favoriteLoginRequired"))) return;
     setFavorites((s) => {
       const next = new Set(s);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
+    });
+  };
+
+  const handleAdd = (p: FrontProduct) => {
+    if (!requireAuth(tCart("loginRequired"))) return;
+    addItem({
+      productId: p.id,
+      sellerId: p.sellerId ?? "",
+      title: isRtl ? p.title_ar : p.title_fr,
+      price: p.price,
+      imageUrl: p.image,
     });
   };
 
@@ -184,15 +224,8 @@ export function ProductsSection({ locale }: Props) {
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 {p.verified && (
-                  <span
-                    className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1 shadow-warm"
-                    style={{
-                      background: "var(--gold-light)",
-                      color: "var(--deep-green)",
-                      fontFamily: "var(--font-ui)",
-                    }}
-                  >
-                    ✅ {isRtl ? "موثق GON" : "Authentique GON"}
+                  <span className="absolute top-3 left-3">
+                    <VerifiedBadge size="sm" />
                   </span>
                 )}
                 <button
@@ -236,6 +269,7 @@ export function ProductsSection({ locale }: Props) {
                 </div>
                 <button
                   type="button"
+                  onClick={() => handleAdd(p)}
                   className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-full text-sm font-semibold transition-colors"
                   style={{
                     background: "var(--ocre)",
@@ -250,6 +284,15 @@ export function ProductsSection({ locale }: Props) {
           ))}
         </div>
       </div>
+      {feedback && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 rounded-full bg-[var(--deep-green)] text-white text-sm px-5 py-3 shadow-warm-strong"
+        >
+          {feedback}
+        </div>
+      )}
     </section>
   );
 }

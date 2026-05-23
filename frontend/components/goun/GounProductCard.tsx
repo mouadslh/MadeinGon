@@ -1,14 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { Heart, ShoppingBag, Star } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/lib/api";
 import { useCartStore } from "@/lib/cart-store";
+import { isAuthenticated } from "@/lib/auth";
+import { useFavorite } from "@/hooks/useFavorite";
 import { getImageUrl, PRODUCT_IMAGE_PLACEHOLDER } from "@/lib/product-image";
 import { isAllowedRemoteImage } from "@/lib/remote-images";
+import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 import type { GounLang } from "@/lib/goun-copy";
 
 const BLUR =
@@ -16,6 +20,7 @@ const BLUR =
 
 export type GounProduct = {
   id: string;
+  sellerId?: string;
   nameAr: string;
   nameFr: string;
   city: string;
@@ -82,29 +87,51 @@ export function GounProductCard({
   showQuickAdd?: boolean;
 }) {
   const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
+  const tCart = useTranslations("cart");
   const displayLang = lang ?? (locale === "ar" ? "ar" : "fr");
   const rtl = displayLang === "ar";
   const title = rtl ? product.nameAr : product.nameFr;
-  const [wish, setWish] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
+  const [authed, setAuthed] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const { isFavorited, toggle: toggleFav, loading: favLoading } = useFavorite(product.id);
+
+  useEffect(() => {
+    setAuthed(isAuthenticated());
+  }, [pathname]);
+
+  const ensureAuth = (msg: string): boolean => {
+    if (authed) return true;
+    setFeedback(msg);
+    setTimeout(() => {
+      const redirect = encodeURIComponent(pathname || `/${locale}/catalogue`);
+      router.push(`/${locale}/login?redirect=${redirect}`);
+    }, 900);
+    return false;
+  };
 
   return (
     <article className="goun-card-hover group relative flex flex-col rounded-xl border border-[var(--goun-mist)] border-s-[3px] border-s-transparent bg-white overflow-hidden shadow-sm">
       <Link href={`/${locale}/product/${product.id}`} className="relative aspect-square block group">
         <ProductImage src={product.image} alt={title} className="object-cover transition-transform duration-500 group-hover:scale-105" />
-        <span className="absolute top-2 start-2 z-10 px-2 py-0.5 rounded-full text-[10px] goun-font-ui bg-[var(--goun-gold)] text-[var(--goun-night)] font-medium">
-          {rtl ? "✅ أصيل GON" : "✅ Authentique GON"}
+        <span className="absolute top-2 start-2 z-10">
+          <VerifiedBadge size="sm" />
         </span>
         <button
           type="button"
+          disabled={favLoading}
           onClick={(e) => {
             e.preventDefault();
-            setWish(!wish);
+            if (!ensureAuth(tCart("favoriteLoginRequired"))) return;
+            void toggleFav();
           }}
-          className="absolute top-2 end-2 z-10 p-2 rounded-full bg-white/90 shadow-sm min-h-tap"
+          className="absolute top-2 end-2 z-10 p-2 rounded-full bg-white/90 shadow-sm min-h-tap disabled:opacity-60"
+          aria-pressed={isFavorited ? "true" : "false"}
           aria-label={rtl ? "المفضلة" : "Liste de souhaits"}
         >
-          <Heart className={`w-4 h-4 ${wish ? "fill-[var(--goun-earth)] text-[var(--goun-earth)]" : "text-[var(--goun-charcoal)]"}`} />
+          <Heart className={`w-4 h-4 ${isFavorited ? "fill-red-500 text-red-500" : "text-[var(--goun-charcoal)]"}`} />
         </button>
       </Link>
       <div className="p-4 flex flex-col flex-1 gap-1.5">
@@ -127,15 +154,16 @@ export function GounProductCard({
           {showQuickAdd && (
             <button
               type="button"
-              onClick={() =>
+              onClick={() => {
+                if (!ensureAuth(tCart("loginRequired"))) return;
                 addItem({
                   productId: product.id,
-                  sellerId: "",
+                  sellerId: product.sellerId ?? "",
                   title,
                   price: product.price,
                   imageUrl: getImageUrl(product.image),
-                })
-              }
+                });
+              }}
               className="inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-[var(--goun-forest)] text-white text-xs goun-font-ui hover:bg-[var(--goun-earth)] transition-colors min-h-tap"
               aria-label={rtl ? "أضف إلى السلة" : "Ajouter au panier"}
             >
@@ -145,6 +173,14 @@ export function GounProductCard({
           )}
         </div>
       </div>
+      {feedback && (
+        <div
+          role="status"
+          className="absolute inset-x-2 bottom-2 z-20 rounded-lg bg-[var(--goun-night)]/90 text-white text-xs px-3 py-2 text-center"
+        >
+          {feedback}
+        </div>
+      )}
     </article>
   );
 }

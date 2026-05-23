@@ -188,7 +188,6 @@ export default function AdminSellersPage() {
   return (
     <div className="max-w-6xl w-full space-y-4">
       <h1 className="font-display text-xl sm:text-2xl text-ochre">{t("title")}</h1>
-      <p className="text-sm text-night/70">{t("cinHint")}</p>
 
       {message ? <p className="text-sm px-3 py-2 rounded-card bg-green-100 text-green-800">{message}</p> : null}
       {error ? <p className="text-sm px-3 py-2 rounded-card bg-red-100 text-red-800">{error}</p> : null}

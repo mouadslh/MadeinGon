@@ -53,7 +53,7 @@ export function SellerProductsView() {
             {t("Mes produits", "منتجاتي")}
           </h1>
           <Link
-            href={`/${locale}/products/new`}
+            href={`/${locale}/seller/products/new`}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--goun-earth)] text-white goun-font-ui text-sm hover:bg-[var(--goun-forest)] min-h-tap"
           >
             <Plus size={16} />

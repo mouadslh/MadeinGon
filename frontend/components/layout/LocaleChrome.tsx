@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ChatWidget } from "@/components/ai/ChatWidget";
+import { IntroAnimation } from "@/components/IntroAnimation";
+import { AuthSync } from "@/components/auth/AuthSync";
 
 function pathWithoutLocale(pathname: string): string {
   return pathname.replace(/^\/(fr|ar)(?=\/|$)/, "") || "/";
@@ -28,7 +30,12 @@ export function LocaleChrome({
 }) {
   const pathname = usePathname();
   const path = pathWithoutLocale(pathname);
-  const hideGlobalChrome = path.startsWith("/seller") || path.startsWith("/admin");
+  const isAuthRoute =
+    path.startsWith("/login") ||
+    path.startsWith("/register") ||
+    path.startsWith("/auth");
+  const hideGlobalChrome =
+    path.startsWith("/seller/") || path.startsWith("/admin") || isAuthRoute;
   const useGounTheme = isGounPublicRoute(path);
 
   useEffect(() => {
@@ -37,11 +44,19 @@ export function LocaleChrome({
   }, [useGounTheme]);
 
   if (hideGlobalChrome || path === "/" || path === "") {
-    return <>{children}</>;
+    return (
+      <>
+        <AuthSync />
+        <IntroAnimation locale={locale} />
+        {children}
+      </>
+    );
   }
 
   return (
     <>
+      <AuthSync />
+      <IntroAnimation locale={locale} />
       <Navbar />
       <main className="min-h-[calc(100vh-8rem)]">{children}</main>
       <Footer />

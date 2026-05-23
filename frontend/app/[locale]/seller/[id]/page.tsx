@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { Card } from "@/components/ui/Card";
+import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 
 interface SellerPublic {
   id: string;
@@ -58,9 +59,9 @@ export default function PublicSellerPage() {
         </p>
         {bio && <p className="mt-4 text-sm text-night/80 leading-relaxed">{bio}</p>}
         {seller.is_verified && (
-          <p className="mt-3 text-xs text-[var(--color-success)]">
-            {locale === "ar" ? "بائع موثّق" : "Vendeur vérifié"}
-          </p>
+          <div className="mt-3">
+            <VerifiedBadge size="sm" />
+          </div>
         )}
       </Card>
     </div>

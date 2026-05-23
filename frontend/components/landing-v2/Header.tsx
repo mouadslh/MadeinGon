@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Heart, Search, ShoppingBag, User } from "lucide-react";
 import { CATEGORIES } from "./copy";
+import { Logo } from "@/components/layout/Logo";
+import { isAuthenticated } from "@/lib/auth";
 
 function getLocale(path: string): "fr" | "ar" {
   const m = path.match(/^\/(fr|ar)(?=\/|$)/);
@@ -17,6 +19,7 @@ export function Header() {
   const isRtl = locale === "ar";
 
   const [hidden, setHidden] = useState(false);
+  const [authed, setAuthed] = useState(false);
   const lastY = useRef(0);
 
   useEffect(() => {
@@ -29,6 +32,10 @@ export function Header() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    setAuthed(isAuthenticated());
+  }, [pathname]);
 
   const t = (fr: string, ar: string) => (locale === "ar" ? ar : fr);
   const searchPlaceholder = isRtl
@@ -50,15 +57,25 @@ export function Header() {
           0
         </span>
       </Link>
-      <button
-        type="button"
-        aria-label={t("Favoris", "المفضلة")}
-        className="p-2 rounded-full hover:bg-[var(--sand-dark)] transition-colors"
-      >
-        <Heart size={22} style={{ color: "var(--anthracite)" }} />
-      </button>
+      {authed ? (
+        <Link
+          href={`/${locale}/favoris`}
+          aria-label={t("Favoris", "المفضلة")}
+          className="p-2 rounded-full hover:bg-[var(--sand-dark)] transition-colors"
+        >
+          <Heart size={22} style={{ color: "var(--anthracite)" }} />
+        </Link>
+      ) : (
+        <Link
+          href={`/${locale}/login?redirect=${encodeURIComponent(`/${locale}/favoris`)}`}
+          aria-label={t("Favoris", "المفضلة")}
+          className="p-2 rounded-full hover:bg-[var(--sand-dark)] transition-colors"
+        >
+          <Heart size={22} style={{ color: "var(--anthracite)" }} />
+        </Link>
+      )}
       <Link
-        href={`/${locale}/login`}
+        href={authed ? `/${locale}/orders` : `/${locale}/login`}
         aria-label={t("Connexion", "تسجيل الدخول")}
         className="p-2 rounded-full hover:bg-[var(--sand-dark)] transition-colors"
       >
@@ -92,25 +109,8 @@ export function Header() {
     >
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center gap-3 md:gap-6 py-3 md:py-4">
-          <Link
-            href={`/${locale}`}
-            className="flex items-center gap-2 shrink-0"
-            aria-label="Made in GON"
-          >
-            <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden>
-              <path
-                d="M32 6c-9 14-14 24-14 34 0 9 6 16 14 16s14-7 14-16C46 30 41 20 32 6z"
-                fill="var(--deep-green)"
-              />
-              <path d="M32 14v40" stroke="var(--gold-light)" strokeWidth="1.5" />
-            </svg>
-            <span
-              className="text-lg md:text-xl font-bold leading-none"
-              style={{ fontFamily: "var(--font-display)", color: "var(--deep-green)" }}
-            >
-              Made in <span style={{ color: "var(--ocre)" }}>GON</span>
-            </span>
-          </Link>
+          <Logo size="md" href={`/${locale}`} />
+
 
           <form
             role="search"
