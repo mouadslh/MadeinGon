@@ -1,0 +1,74 @@
+[
+  {
+    "id": "1",
+    "question": "Comment passer une commande ?",
+    "answer": "Parcourez le catalogue, ajoutez un produit au panier, puis cliquez sur Commander. Renseignez votre adresse de livraison et choisissez le paiement (à la livraison ou carte CMI). Vous recevrez une confirmation par SMS ou email.",
+    "category": "acheteur"
+  },
+  {
+    "id": "2",
+    "question": "Comment devenir vendeur sur Made in GON ?",
+    "answer": "Cliquez sur « Devenir vendeur », remplissez le formulaire en 3 étapes (ville, boutique, CIN), puis soumettez votre candidature. L'équipe admin valide sous 24 à 48 h.",
+    "category": "vendeur"
+  },
+  {
+    "id": "3",
+    "question": "Quels moyens de paiement acceptez-vous ?",
+    "answer": "Paiement à la livraison (COD) dans la région Guelmim-Oued Noun, et paiement par carte bancaire via la passerelle sécurisée CMI pour les commandes en ligne.",
+    "category": "paiement"
+  },
+  {
+    "id": "4",
+    "question": "Combien de temps prend la livraison ?",
+    "answer": "Les délais dépendent du transporteur (Amana, CTM, Ghazal) et de votre commune. En général, comptez 2 à 7 jours ouvrés après confirmation de la commande par le vendeur.",
+    "category": "livraison"
+  },
+  {
+    "id": "5",
+    "question": "Comment suivre ma commande ?",
+    "answer": "Connectez-vous à votre compte, ouvrez « Mes commandes » et consultez le statut (en attente, expédiée, livrée). Un numéro de suivi s'affiche dès l'expédition par le vendeur.",
+    "category": "commande"
+  },
+  {
+    "id": "6",
+    "question": "Puis-je annuler une commande ?",
+    "answer": "Tant que la commande est en statut « En attente », contactez le support via cette FAQ ou demandez l'annulation au vendeur. Après expédition, les retours suivent la politique du vendeur.",
+    "category": "commande"
+  },
+  {
+    "id": "7",
+    "question": "Comment ajouter un produit à ma boutique ?",
+    "answer": "Depuis votre tableau de bord vendeur, cliquez sur « Nouveau produit », remplissez titre, prix, photo et catégorie. Chaque produit est modéré par l'admin avant publication au catalogue.",
+    "category": "vendeur"
+  },
+  {
+    "id": "8",
+    "question": "Quand suis-je payé en tant que vendeur ?",
+    "answer": "Après livraison confirmée et période de réclamation, le montant (moins commission plateforme) est crédité sur votre portefeuille vendeur, puis viré sur votre RIB.",
+    "category": "vendeur"
+  },
+  {
+    "id": "9",
+    "question": "Que signifie le badge « Vérifié Authentique GOUN » ?",
+    "answer": "Ce badge indique que le produit a passé une modération et un score d'authenticité satisfaisant. Les vendeurs avec profil complet et CIN vérifiée inspirent plus de confiance.",
+    "category": "acheteur"
+  },
+  {
+    "id": "10",
+    "question": "Quelles zones sont couvertes par la livraison ?",
+    "answer": "Nous couvrons principalement Guelmim, Tan-Tan, Sidi Ifni, Assa-Zag, Tata et communes voisines. Les frais et délais sont calculés à la commande.",
+    "category": "livraison"
+  },
+  {
+    "id": "11",
+    "question": "Comment contester un produit ou une commande ?",
+    "answer": "Ouvrez un litige depuis le détail de commande ou contactez l'administration. Un médiateur examine le dossier sous 48 h ouvrées.",
+    "category": "commande"
+  },
+  {
+    "id": "12",
+    "question": "Dois-je fournir ma carte d'identité (CIN) ?",
+    "answer": "Oui, pour devenir vendeur vous devez téléverser une photo ou scan lisible de votre CIN. Elle est stockée de façon sécurisée et visible uniquement par l'équipe admin pour vérification.",
+    "category": "vendeur"
+  }
+]

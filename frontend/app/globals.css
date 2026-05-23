@@ -1,0 +1,176 @@
+@import "../styles/goun.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ───────────────────────────────────────────────────────────────────
+   Made in GON — Earthy Immersive Desert Luxury — Design System
+   Paste-canonical variables from the master prompt + legacy aliases
+   ─────────────────────────────────────────────────────────────────── */
+:root {
+  /* Master-prompt palette (canonical) */
+  --sand:        #F8F4EB;
+  --deep-green:  #1F4D3A;
+  --ocre:        #C9793A;
+  --anthracite:  #2F2F2F;
+  --warm-border: #E8E1D6;
+  --sand-dark:   #EDE7D9;
+  --gold-light:  #D4A853;
+  --cream-deep:  #F0E9DA;
+
+  /* Font stacks */
+  --font-arabic:  var(--font-cairo), var(--font-tajawal), "Tajawal", "Cairo", sans-serif;
+  --font-display: var(--font-cormorant), "Cormorant Garamond", "Playfair Display", serif;
+  --font-body:    var(--font-dm-sans), "DM Sans", system-ui, sans-serif;
+  --font-ui:      var(--font-poppins), "Poppins", system-ui, sans-serif;
+
+  /* Legacy aliases (kept so existing pages don't break) */
+  --color-white: #ffffff;
+  --color-sand: var(--sand);
+  --color-ochre: var(--ocre);
+  --color-terracotta: #a0522d;
+  --color-dune: var(--warm-border);
+  --color-atlantic: var(--deep-green);
+  --color-night: #0d1f18;
+  --color-mist: var(--sand);
+  --color-success: #2e7d52;
+  --color-danger: #c0392b;
+  --color-warning: var(--gold-light);
+  --color-info: var(--deep-green);
+  --surface-card: #fffdf8;
+  --surface-sidebar: #f5e6c8;
+  --surface-modal: #ffffff;
+
+  /* Shadows */
+  --shadow-warm: 0 8px 40px rgba(31, 77, 58, 0.12);
+  --shadow-warm-strong: 0 16px 60px rgba(31, 77, 58, 0.18);
+}
+
+body {
+  background-color: var(--sand);
+  color: var(--anthracite);
+  font-family: var(--font-body);
+}
+
+html[dir="rtl"] body {
+  font-family: var(--font-arabic);
+}
+
+/* Pages publiques Made in GON (accueil, catalogue, fiche produit) */
+html.goun-theme {
+  --color-sand: var(--sand);
+  --color-ochre: var(--ocre);
+  --color-terracotta: var(--ocre);
+  --color-dune: var(--warm-border);
+  --color-atlantic: var(--deep-green);
+  --color-night: #0d1f18;
+  --color-mist: var(--sand);
+  --surface-card: #fffdf8;
+}
+
+html.goun-theme body {
+  background-color: var(--sand);
+  color: var(--anthracite);
+}
+
+html.goun-theme[dir="rtl"] body { font-family: var(--font-arabic); }
+html.goun-theme[dir="ltr"] body { font-family: var(--font-body); }
+html.goun-theme[dir="ltr"] .font-display { font-family: var(--font-display); }
+
+/* ───────────────────────────────────────────────────────────────────
+   Atmosphere — grain, parallax, separators, Amazigh micro-pattern
+   ─────────────────────────────────────────────────────────────────── */
+.atmosphere-grain {
+  position: relative;
+  isolation: isolate;
+}
+.atmosphere-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+.parallax-hero-bg {
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+}
+
+@media (max-width: 768px) {
+  .parallax-hero-bg { background-attachment: scroll; }
+}
+
+.diagonal-cut-bottom {
+  clip-path: polygon(0 0, 100% 4%, 100% 100%, 0 96%);
+}
+.diagonal-cut-top {
+  clip-path: polygon(0 4%, 100% 0, 100% 100%, 0 100%);
+}
+
+.amazigh-pattern {
+  background-color: var(--cream-deep);
+  background-image:
+    url("data:image/svg+xml;utf8,<svg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'><g fill='none' stroke='%231F4D3A' stroke-width='0.7' opacity='0.18'><path d='M40 6 L74 40 L40 74 L6 40 Z'/><path d='M40 22 L58 40 L40 58 L22 40 Z'/><circle cx='40' cy='40' r='3'/><path d='M0 40 L80 40 M40 0 L40 80'/></g></svg>");
+  background-size: 80px 80px;
+}
+
+.shadow-warm { box-shadow: var(--shadow-warm); }
+.shadow-warm-strong { box-shadow: var(--shadow-warm-strong); }
+
+/* ───────────────────────────────────────────────────────────────────
+   Animations
+   ─────────────────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes slide-in-ltr { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slide-in-rtl { from { opacity: 0; transform: translateX(30px); }  to { opacity: 1; transform: translateX(0); } }
+@keyframes fade-up      { from { opacity: 0; transform: translateY(24px); }  to { opacity: 1; transform: translateY(0); } }
+
+.anim-slide-in-ltr { animation: slide-in-ltr 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-slide-in-rtl { animation: slide-in-rtl 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-fade-up      { animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes mic-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(201,121,58, 0.6); }
+  70%  { box-shadow: 0 0 0 24px rgba(201,121,58, 0);    }
+  100% { box-shadow: 0 0 0 0   rgba(201,121,58, 0);    }
+}
+.mic-pulse { animation: mic-pulse 1.6s ease-out infinite; }
+
+/* ───────────────────────────────────────────────────────────────────
+   Buttons / cards
+   ─────────────────────────────────────────────────────────────────── */
+@layer components {
+  .card-surface {
+    background: var(--surface-card);
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(28, 20, 16, 0.06);
+  }
+  .btn-primary {
+    @apply min-h-tap inline-flex items-center justify-center px-6 py-3 rounded-card font-medium transition-colors;
+    background: var(--ocre);
+    color: white;
+  }
+  .btn-primary:hover { background: #B36830; }
+  .btn-secondary {
+    @apply min-h-tap inline-flex items-center justify-center px-6 py-3 rounded-card font-medium transition-colors;
+    background: var(--deep-green);
+    color: white;
+  }
+  .btn-secondary:hover { background: #173B2D; }
+  .btn-outline-deep {
+    @apply min-h-tap inline-flex items-center justify-center px-6 py-3 rounded-card font-medium transition-colors border-2;
+    border-color: var(--deep-green);
+    color: var(--deep-green);
+    background: transparent;
+  }
+  .btn-outline-deep:hover { background: var(--deep-green); color: white; }
+}

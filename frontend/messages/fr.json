@@ -1,0 +1,205 @@
+{
+  "nav": {
+    "catalogue": "Catalogue",
+    "cart": "Panier",
+    "login": "Connexion",
+    "register": "Inscription",
+    "sellerApply": "Devenir vendeur",
+    "dashboard": "Tableau de bord",
+    "account": "Mon compte",
+    "admin": "Administration"
+  },
+  "home": {
+    "heroAr": "أصالة الجنوب في كل منتج",
+    "heroFr": "Découvrez l'artisanat authentique de Guelmim-Oued Noun",
+    "cta": "Explorer le catalogue",
+    "featured": "Produits du moment",
+    "artisans": "Nos Artisans",
+    "trustDelivery": "Livraison sécurisée",
+    "trustAuth": "Authenticité garantie",
+    "trustPay": "Paiement sécurisé"
+  },
+  "landing": {
+    "hero": {
+      "badge": "◆ Souk 100 % intelligent — pas une vitrine classique",
+      "title": "L'artisanat du Sud, réinventé par l'IA",
+      "subtitle": "Recherche qui vous comprend, recommandations qui apprennent, photos qui vendent, authenticité qui rassure — 6 intelligences pour chaque artisan.",
+      "cta_explore": "Explorer le catalogue",
+      "cta_seller": "Devenir artisan",
+      "scroll_indicator": "Faites défiler pour découvrir"
+    },
+    "stats": {
+      "artisans": "Artisans",
+      "products": "Produits",
+      "countries": "Pays",
+      "rating": "Satisfaction moyenne"
+    },
+    "products": {
+      "title": "Créations du moment",
+      "cta": "Voir tout le catalogue →",
+      "badge_recommended": "Recommandé par l'IA"
+    },
+    "testimonials": {
+      "title": "Ce que disent nos artisans et acheteurs",
+      "roleArtisan": "Artisan",
+      "roleBuyer": "Acheteur",
+      "quote1": "J'ai triplé mes ventes en 6 mois grâce à l'IA.",
+      "quote2": "Pièces uniques, livraison rapide. Excellent.",
+      "quote3": "La vérification rassure les acheteurs.",
+      "backQuote": "Made in GON a changé ma façon de vendre mes tapis. L'IA m'aide à toucher des clients dans 12 pays."
+    },
+    "cta": {
+      "title": "Rejoignez 1200 artisans qui font confiance à Made in GON",
+      "cta_sell": "Commencer à vendre",
+      "cta_discover": "Découvrir les produits"
+    },
+    "ai": {
+      "eyebrow": "Cerveau GOUN · 6 intelligences intégrées",
+      "headline": "L'IA n'est pas un gadget — c'est votre avantage compétitif",
+      "subheadline": "Chaque achat, chaque produit et chaque photo passe par nos modèles : vous vendez plus vite, l'acheteur a confiance.",
+      "footnote": "Technos : Whisper · Vision · Reco hybride · Assistant FR/AR · Score authenticité",
+      "compare": {
+        "without": "Marketplace classique",
+        "with": "Made in GON + IA",
+        "withoutList": [
+          "Mots-clés seuls, sans contexte",
+          "Photos faibles = moins de clics",
+          "Saisie manuelle, 15 minutes",
+          "Aucune preuve d'authenticité",
+          "Support email, 48 h"
+        ],
+        "withList": [
+          "Recherche en langage naturel (FR / AR)",
+          "Studio photo : fond pro en 3 secondes",
+          "Création vocale : vous parlez, l'IA remplit la fiche",
+          "Score authenticité + badge GOUN vérifié",
+          "Assistant 24/7 en français et arabe"
+        ]
+      },
+      "powers": {
+        "search": {
+          "icon": "⌕",
+          "title": "Recherche sémantique",
+          "benefit": "Cherche l'intention, pas le mot",
+          "tech": "NLP · FR / AR",
+          "label": "Démo live",
+          "description": "L'acheteur décrit son besoin comme au souk. L'IA extrait style, couleur, usage et classe les résultats."
+        },
+        "reco": {
+          "icon": "✦",
+          "title": "Recommandations intelligentes",
+          "benefit": "Panier +34 % estimé",
+          "tech": "Collaboratif + contenu",
+          "label": "Pourquoi ce produit ?",
+          "description": "Historique de vues et achats, proximité des artisans. Chaque suggestion avec une raison claire."
+        },
+        "photo": {
+          "icon": "◇",
+          "title": "Studio photo IA",
+          "benefit": "Qualité pro sans photographe",
+          "tech": "rembg · Pillow",
+          "label": "Pipeline",
+          "description": "Photo prise au téléphone. L'IA retire le fond et améliore la lumière — prêt pour le catalogue."
+        },
+        "voice": {
+          "icon": "◎",
+          "title": "Création vocale",
+          "benefit": "Fiche produit en 30 secondes",
+          "tech": "Whisper",
+          "label": "Parlez en darija ou en français",
+          "description": "Décrivez votre produit à l'oral — transcription puis remplissage titre, prix et mots-clés."
+        },
+        "auth": {
+          "icon": "◈",
+          "title": "Scanner d'authenticité",
+          "benefit": "Confiance mesurable",
+          "tech": "EXIF · recherche inverse",
+          "label": "Score instantané",
+          "description": "Analyse métadonnées, netteté et similarité d'images. Badge « Vérifié GOUN » dès 80/100."
+        },
+        "chat": {
+          "icon": "◉",
+          "title": "Assistant FR / AR",
+          "benefit": "Aucune question sans réponse",
+          "tech": "Chatbot",
+          "label": "Conversation",
+          "description": "Livraison, paiement, inscription. Réponses instantanées jour et nuit."
+        }
+      },
+      "demos": {
+        "search": {
+          "queries": [
+            "Tapis berbère rouge pour salon moderne",
+            "Cadeau authentique pour une femme à Marrakech",
+            "Poterie bleue de Tamegroute à bon prix"
+          ],
+          "intents": ["Style: berbère", "Couleur: rouge", "Pièce: salon", "Budget: moyen"]
+        },
+        "reco": {
+          "items": [
+            { "title": "Tapis Beni Ouarain", "reason": "A consulté 3 textiles berbères", "match": 94 },
+            { "title": "Amlou aux amandes", "reason": "Souvent acheté avec l'artisanat du Sud", "match": 88 },
+            { "title": "Bracelet argent Tiznit", "reason": "Tendance cette semaine à Guelmim", "match": 81 }
+          ]
+        },
+        "photo": {
+          "pipeline": ["Upload", "Détourage", "Lumière", "Catalogue"],
+          "before": "Avant",
+          "after": "Après IA"
+        },
+        "voice": {
+          "fields": [
+            { "label": "Titre", "value": "Tapis Beni Ouarain — laine naturelle" },
+            { "label": "Prix", "value": "2 400 MAD" },
+            { "label": "Mots-clés", "value": "tapis, berbère, Guelmim, rouge" },
+            { "label": "Catégorie", "value": "Textile" }
+          ]
+        },
+        "auth": {
+          "scoreLabel": "Authenticité",
+          "flags": [
+            "✓ Résolution suffisante",
+            "✓ Métadonnées EXIF présentes",
+            "✓ Aucun doublon en ligne",
+            "→ Éligible badge GOUN"
+          ]
+        },
+        "chat": {
+          "messages": [
+            { "role": "user", "text": "Comment suivre ma commande pour Paris ?" },
+            { "role": "ai", "text": "Dans « Mes commandes » : suivi direct + n° de colis dès l'expédition." },
+            { "role": "user", "text": "كيفاش نولي بائع؟" },
+            { "role": "ai", "text": "صفحة « Devenir vendeur »، téléversez la CIN — validation sous 24 h." }
+          ]
+        }
+      }
+    }
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Mot de passe",
+    "phone": "Téléphone",
+    "login": "Se connecter",
+    "register": "Créer un compte",
+    "otpSend": "Envoyer le code",
+    "otpVerify": "Vérifier"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "currency": "DH",
+    "actions": "Actions"
+  },
+  "admin": {
+    "products": {
+      "title": "Modération des produits",
+      "name": "Nom",
+      "status": "Statut",
+      "viewDetails": "Voir les détails",
+      "filterAll": "Tous",
+      "filterPending": "En attente",
+      "filterApproved": "Approuvés",
+      "filterRejected": "Rejetés"
+    }
+  }
+}

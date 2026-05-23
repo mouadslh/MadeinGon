@@ -1,0 +1,190 @@
+/* Made in GON — Desert & Nature design tokens */
+:root {
+  --goun-sand: #f8f4eb;
+  --goun-earth: #c9793a;
+  --goun-forest: #1f4d3a;
+  --goun-charcoal: #2f2f2f;
+  --goun-mist: #e8e1d6;
+  --goun-gold: #d4a843;
+  --goun-night: #0d1f18;
+}
+
+.goun-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.goun-zellige {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30Z' fill='none' stroke='%231F4D3A' stroke-width='0.5' opacity='0.15'/%3E%3C/svg%3E");
+  background-size: 60px 60px;
+}
+
+@keyframes goun-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes goun-logo-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes goun-hero-blur-in {
+  from { filter: blur(20px); transform: translateY(8%); }
+  to { filter: blur(0); transform: translateY(0); }
+}
+
+@keyframes goun-char-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes goun-dust-float {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  15% { opacity: 0.7; }
+  50% { opacity: 0.4; }
+  100% { transform: translateY(-120px) translateX(12px); opacity: 0; }
+}
+
+@keyframes goun-scroll-up {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes goun-intro-fadeout {
+  from {
+    opacity: 1;
+    visibility: visible;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.goun-intro-overlay {
+  background: var(--goun-night);
+}
+
+.goun-intro-bg {
+  animation: goun-fade-in 0.5s ease forwards;
+  animation-fill-mode: forwards;
+}
+
+.goun-intro-logo-block {
+  opacity: 0;
+  animation: goun-logo-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards;
+  animation-fill-mode: forwards;
+}
+
+.goun-intro-made,
+.goun-intro-gon,
+.goun-intro-brand {
+  animation-fill-mode: forwards;
+}
+
+.goun-intro-tagline {
+  opacity: 0;
+  animation: goun-logo-in 0.5s ease 1.2s forwards;
+  animation-fill-mode: forwards;
+}
+
+.goun-intro-welcome {
+  opacity: 0;
+  animation: goun-logo-in 0.4s ease 1.5s forwards;
+  animation-fill-mode: forwards;
+}
+
+.goun-intro-char {
+  opacity: 0;
+  animation: goun-char-in 0.08s ease forwards;
+  animation-fill-mode: forwards;
+}
+
+.goun-intro-overlay.goun-intro-exiting {
+  animation: goun-intro-fadeout 0.6s ease forwards;
+  animation-fill-mode: forwards;
+  pointer-events: none;
+}
+
+.goun-intro-dust {
+  animation-fill-mode: forwards;
+}
+
+.goun-hero-bg-in {
+  animation: goun-hero-blur-in 1s ease 2.2s both;
+  animation-fill-mode: forwards;
+}
+
+.goun-dust-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--goun-gold);
+  animation: goun-dust-float linear infinite;
+}
+
+.goun-scroll-reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.goun-scroll-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.goun-card-hover {
+  transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+.goun-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(13, 31, 24, 0.12);
+  border-inline-start-color: var(--goun-earth);
+}
+
+.goun-hero-slide {
+  transition: opacity 0.8s ease, transform 1.2s ease;
+}
+
+.goun-hero-slide-active .goun-hero-slide-bg {
+  transform: scale(1.03);
+}
+
+.goun-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--goun-mist) 0%,
+    #fff 50%,
+    var(--goun-mist) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.goun-voice-pulse {
+  animation: goun-pulse-ring 1.5s ease-out infinite;
+}
+
+@keyframes goun-pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(201, 121, 58, 0.5); }
+  70% { box-shadow: 0 0 0 20px rgba(201, 121, 58, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(201, 121, 58, 0); }
+}
+
+.goun-font-ar {
+  font-family: var(--font-cairo), var(--font-tajawal), sans-serif;
+}
+
+.goun-font-display {
+  font-family: var(--font-cormorant), "Playfair Display", serif;
+}
+
+.goun-font-ui {
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
