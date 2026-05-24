@@ -15,6 +15,7 @@ class BuyerAddressOut(BaseModel):
 class OrderItemOut(BaseModel):
     product_id: UUID
     product_name: str
+    product_name_ar: Optional[str] = None
     product_image: str = ""
     quantity: int
     unit_price: float

@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 import { isAuthenticated } from "@/lib/auth";
 import { useCartStore } from "@/lib/cart-store";
 import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
+import { getProductTitle } from "@/lib/product-title";
 
 type Props = { locale: "fr" | "ar" };
 
@@ -35,7 +36,7 @@ type FrontProduct = {
   sellerId?: string;
   slug: string;
   title_fr: string;
-  title_ar: string;
+  title_ar: string | null;
   price: number;
   city: string;
   rating: number;
@@ -43,57 +44,6 @@ type FrontProduct = {
   image: string;
   verified: boolean;
 };
-
-const FALLBACK_PRODUCTS: FrontProduct[] = [
-  {
-    id: "demo-1", slug: "huile-argan", title_fr: "Huile d'argan bio", title_ar: "زيت الأرقان العضوي",
-    price: 120, city: "Guelmim", rating: 4.8, reviews: 24,
-    image: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=600&q=80",
-    verified: true,
-  },
-  {
-    id: "demo-2", slug: "miel-thym", title_fr: "Miel de thym des montagnes", title_ar: "عسل الزعتر الجبلي",
-    price: 85, city: "Assa-Zag", rating: 4.7, reviews: 18,
-    image: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&q=80",
-    verified: true,
-  },
-  {
-    id: "demo-3", slug: "dattes-draa", title_fr: "Dattes Draa premium", title_ar: "تمر درعة الفاخر",
-    price: 65, city: "Guelmim", rating: 4.9, reviews: 42,
-    image: "https://images.unsplash.com/photo-1574226516831-e1dff420e562?w=600&q=80",
-    verified: true,
-  },
-  {
-    id: "demo-4", slug: "tapis-hassani", title_fr: "Tapis hassani fait main", title_ar: "زربية حسانية يدوية",
-    price: 750, city: "Tan-Tan", rating: 5.0, reviews: 8,
-    image: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=600&q=80",
-    verified: true,
-  },
-  {
-    id: "demo-5", slug: "bijoux-argent", title_fr: "Bijoux amazighs en argent", title_ar: "مجوهرات فضية أمازيغية",
-    price: 280, city: "Sidi Ifni", rating: 4.6, reviews: 15,
-    image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&q=80",
-    verified: true,
-  },
-  {
-    id: "demo-6", slug: "karite", title_fr: "Beurre de karité naturel", title_ar: "زبدة كاريتي الطبيعية",
-    price: 45, city: "Guelmim", rating: 4.3, reviews: 9,
-    image: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=600&q=80",
-    verified: false,
-  },
-  {
-    id: "demo-7", slug: "eau-rose", title_fr: "Eau de rose purifiante", title_ar: "ماء ورد للبشرة",
-    price: 35, city: "Tan-Tan", rating: 4.5, reviews: 12,
-    image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=600&q=80",
-    verified: true,
-  },
-  {
-    id: "demo-8", slug: "djellaba", title_fr: "Djellaba brodée artisanale", title_ar: "جلباب تقليدي مطرز",
-    price: 450, city: "Guelmim", rating: 4.8, reviews: 6,
-    image: "https://images.unsplash.com/photo-1590735213920-68192a487bc2?w=600&q=80",
-    verified: true,
-  },
-];
 
 function normalize(p: ApiProduct): FrontProduct {
   const image =
@@ -105,7 +55,7 @@ function normalize(p: ApiProduct): FrontProduct {
     sellerId: p.seller_id,
     slug: p.slug ?? p.id,
     title_fr: p.title_fr ?? p.name_fr ?? "Produit",
-    title_ar: p.title_ar ?? p.name_ar ?? "منتج",
+    title_ar: p.title_ar ?? p.name_ar ?? null,
     price: typeof p.price === "string" ? parseFloat(p.price) : p.price,
     city: p.city ?? "Guelmim",
     rating: p.rating ?? 4.6,
@@ -121,7 +71,8 @@ export function ProductsSection({ locale }: Props) {
   const pathname = usePathname();
   const tCart = useTranslations("cart");
   const addItem = useCartStore((s) => s.addItem);
-  const [products, setProducts] = useState<FrontProduct[]>(FALLBACK_PRODUCTS);
+  const [products, setProducts] = useState<FrontProduct[]>([]);
+  const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [authed, setAuthed] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -133,14 +84,15 @@ export function ProductsSection({ locale }: Props) {
   useEffect(() => {
     const url =
       (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000") +
-      "/products?limit=12&featured=true";
+      "/products?page_size=12";
     fetch(url)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         const items: ApiProduct[] = d?.items ?? [];
-        if (items.length > 0) setProducts(items.map(normalize));
+        setProducts(items.map(normalize));
       })
-      .catch(() => undefined);
+      .catch(() => setProducts([]))
+      .finally(() => setLoading(false));
   }, []);
 
   const requireAuth = (msg: string): boolean => {
@@ -168,7 +120,7 @@ export function ProductsSection({ locale }: Props) {
     addItem({
       productId: p.id,
       sellerId: p.sellerId ?? "",
-      title: isRtl ? p.title_ar : p.title_fr,
+      title: getProductTitle(p, locale),
       price: p.price,
       imageUrl: p.image,
     });
@@ -208,8 +160,25 @@ export function ProductsSection({ locale }: Props) {
           </Link>
         </div>
 
+        {loading ? (
+          <p
+            className="text-center py-12 opacity-70"
+            style={{ color: "var(--deep-green)", fontFamily: "var(--font-ui)" }}
+          >
+            {isRtl ? "جاري التحميل…" : "Chargement…"}
+          </p>
+        ) : products.length === 0 ? (
+          <p
+            className="text-center py-12 opacity-70"
+            style={{ color: "var(--deep-green)", fontFamily: isRtl ? "var(--font-arabic)" : "var(--font-ui)" }}
+          >
+            {isRtl ? "لا توجد منتجات حالياً." : "Aucun produit pour le moment."}
+          </p>
+        ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-          {products.slice(0, 8).map((p) => (
+          {products.slice(0, 8).map((p) => {
+            const displayTitle = getProductTitle(p, locale);
+            return (
             <article
               key={p.id}
               className="group bg-white rounded-2xl overflow-hidden shadow-warm hover:shadow-warm-strong transition-all hover:-translate-y-1"
@@ -218,7 +187,7 @@ export function ProductsSection({ locale }: Props) {
               <div className="relative aspect-[4/5] overflow-hidden bg-[var(--warm-border)]">
                 <Image
                   src={p.image}
-                  alt={isRtl ? p.title_ar : p.title_fr}
+                  alt={displayTitle}
                   fill
                   sizes="(max-width:768px) 50vw, 25vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -250,7 +219,7 @@ export function ProductsSection({ locale }: Props) {
                     fontFamily: isRtl ? "var(--font-arabic)" : "var(--font-body)",
                   }}
                 >
-                  {isRtl ? p.title_ar : p.title_fr}
+                  {displayTitle}
                 </h3>
                 <div
                   className="flex items-center text-xs gap-2 mb-2"
@@ -281,8 +250,10 @@ export function ProductsSection({ locale }: Props) {
                 </button>
               </div>
             </article>
-          ))}
+          );
+          })}
         </div>
+        )}
       </div>
       {feedback && (
         <div

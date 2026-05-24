@@ -3,39 +3,25 @@
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
-import {
-  Grid3X3,
-  LayoutGrid,
-  ChevronDown,
-  ChevronUp,
-  Gem,
-  Utensils,
-  Sparkles,
-  Shirt,
-  MapPin,
-  Star,
-} from "lucide-react";
+import { Grid3X3, LayoutGrid, ChevronDown, ChevronUp, MapPin, Search, Star } from "lucide-react";
+import { CategoryIcon } from "@/components/categories/CategoryIcon";
 import { ProductGrid } from "@/components/buyer/ProductGrid";
 import { ProductCard, ProductCardData } from "@/components/buyer/ProductCard";
 import { CatalogueSkeleton } from "@/components/buyer/CatalogueSkeleton";
 import { GounFonts } from "@/components/goun/GounFonts";
-import { GounProductCard } from "@/components/goun/GounProductCard";
-import { FEATURED_PRODUCTS } from "@/lib/goun-copy";
 import { api } from "@/lib/api";
+import { PRODUCT_CATEGORIES, normalizeCategorySlugs, sortCategories } from "@/lib/categories";
 import { getCopy, isRtl, localeToGounLang } from "@/lib/goun-copy";
 
 const CITIES = ["Guelmim", "Tan-Tan", "Sidi Ifni", "Assa-Zag"];
-const CATS = [
-  { id: "artisanat", icon: Gem, fr: "Artisanat", ar: "الحرف اليدوية" },
-  { id: "food", icon: Utensils, fr: "Alimentaire", ar: "غذائي" },
-  { id: "cosmetic", icon: Sparkles, fr: "Cosmétique", ar: "مستحضرات" },
-  { id: "textile", icon: Shirt, fr: "Textile", ar: "نسيج" },
-];
+
+type CategoryOption = { slug: string; name_fr: string; name_ar: string };
 
 function FilterSidebar({
   rtl,
   lang,
   copy,
+  categories,
   selectedCats,
   setSelectedCats,
   selectedCities,
@@ -51,6 +37,7 @@ function FilterSidebar({
   rtl: boolean;
   lang: ReturnType<typeof localeToGounLang>;
   copy: ReturnType<typeof getCopy>;
+  categories: CategoryOption[];
   selectedCats: string[];
   setSelectedCats: (v: string[]) => void;
   selectedCities: string[];
@@ -92,23 +79,20 @@ function FilterSidebar({
       {[
         { key: "cat", title: rtl ? "الفئة" : "Catégorie", content: (
           <ul className="space-y-2">
-            {CATS.map((c) => {
-              const Icon = c.icon;
-              return (
-                <li key={c.id}>
-                  <label className="flex items-center gap-2 cursor-pointer min-h-tap">
-                    <input
-                      type="checkbox"
-                      checked={selectedCats.includes(c.id)}
-                      onChange={() => toggleCat(c.id)}
-                      className="accent-[var(--goun-forest)]"
-                    />
-                    <Icon className="w-4 h-4 text-[var(--goun-earth)]" />
-                    <span>{rtl ? c.ar : c.fr}</span>
-                  </label>
-                </li>
-              );
-            })}
+            {categories.map((c) => (
+              <li key={c.slug}>
+                <label className="flex items-center gap-2 cursor-pointer min-h-tap">
+                  <input
+                    type="checkbox"
+                    checked={selectedCats.includes(c.slug)}
+                    onChange={() => toggleCat(c.slug)}
+                    className="accent-[var(--goun-forest)]"
+                  />
+                  <CategoryIcon slug={c.slug} className="w-4 h-4 text-[var(--goun-earth)] shrink-0" />
+                  <span>{rtl ? c.name_ar : c.name_fr}</span>
+                </label>
+              </li>
+            ))}
           </ul>
         )},
         { key: "city", title: rtl ? "المدينة" : "Ville d'origine", content: (
@@ -233,7 +217,7 @@ function CatalogueInner() {
 
   // Hydrate les filtres depuis l'URL
   const initialCats = searchParams.get("category")
-    ? (searchParams.get("category") as string).split(",").filter(Boolean)
+    ? normalizeCategorySlugs((searchParams.get("category") as string).split(","))
     : [];
   const initialCities = searchParams.get("region")
     ? (searchParams.get("region") as string).split(",").filter(Boolean)
@@ -244,6 +228,9 @@ function CatalogueInner() {
   const initialSort = API_TO_SORT[searchParams.get("sort_by") ?? "recent"] ?? 0;
 
   const [products, setProducts] = useState<ProductCardData[]>([]);
+  const [categories, setCategories] = useState<CategoryOption[]>(
+    PRODUCT_CATEGORIES.map((c) => ({ slug: c.slug, name_fr: c.name_fr, name_ar: c.name_ar }))
+  );
   const [loading, setLoading] = useState(true);
   const [totalServer, setTotalServer] = useState(0);
   const [sortIdx, setSortIdx] = useState(initialSort);
@@ -285,6 +272,23 @@ function CatalogueInner() {
   }, [syncUrl]);
 
   useEffect(() => {
+    api
+      .get<CategoryOption[]>("/categories")
+      .then((r) => {
+        const fromApi = sortCategories(
+          (r.data ?? []).map((c) => ({
+            slug: c.slug,
+            name_fr: c.name_fr,
+            name_ar: c.name_ar,
+            sort_order: "sort_order" in c ? (c as { sort_order?: number }).sort_order : undefined,
+          }))
+        ).map(({ slug, name_fr, name_ar }) => ({ slug, name_fr, name_ar }));
+        if (fromApi.length) setCategories(fromApi);
+      })
+      .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
@@ -313,6 +317,7 @@ function CatalogueInner() {
             price: Number(p.price),
             image_url: rawUrl ?? null,
             authenticity_badge: Boolean(p.authenticity_badge),
+            category_slug: (p.category_slug as string | undefined) ?? null,
           };
         });
         setProducts(items.length ? items : []);
@@ -328,27 +333,14 @@ function CatalogueInner() {
     setPage(1);
   }, [selectedCats, selectedCities, priceRange, verifiedOnly, sortIdx]);
 
-  const mockFallback = useMemo(
-    () =>
-      FEATURED_PRODUCTS.map((p) => ({
-        id: p.id,
-        title_fr: p.nameFr,
-        title_ar: p.nameAr,
-        price: p.price,
-        image_url: p.image,
-        authenticity_badge: true,
-      })),
-    []
-  );
-
-  const displayProducts = products.length ? products : mockFallback;
+  const displayProducts = products;
 
   // Filtres client-side complémentaires (multi-catégories / multi-villes ne
   // sont pas encore supportés par l'API, on les applique en local) + rating.
   const filtered = useMemo(() => {
     let list = [...displayProducts];
     if (selectedCats.length > 1) {
-      // Pas d'info de catégorie côté carte fallback ; on garde tout.
+      list = list.filter((p) => p.category_slug && selectedCats.includes(p.category_slug));
     }
     if (verifiedOnly) list = list.filter((p) => p.authenticity_badge);
     list = list.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
@@ -373,6 +365,7 @@ function CatalogueInner() {
     rtl,
     lang,
     copy,
+    categories,
     selectedCats,
     setSelectedCats,
     selectedCities,
@@ -443,21 +436,17 @@ function CatalogueInner() {
 
             {loading ? (
               <CatalogueSkeleton />
+            ) : paged.length === 0 ? (
+              <p
+                className={`text-center py-16 text-[var(--goun-forest)]/70 ${rtl ? "goun-font-ar" : "goun-font-ui"}`}
+              >
+                {copy.catalogue.empty as string}
+              </p>
             ) : viewGrid ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
-                {paged.map((p) => {
-                  const goun = FEATURED_PRODUCTS.find((f) => f.id === p.id);
-                  if (goun) {
-                    return (
-                      <GounProductCard
-                        key={p.id}
-                        product={{ ...goun, sellerId: "seller_id" in p ? p.seller_id : undefined }}
-                        lang={lang}
-                      />
-                    );
-                  }
-                  return <ProductCard key={p.id} product={p} />;
-                })}
+                {paged.map((p) => (
+                  <ProductCard key={p.id} product={p} />
+                ))}
               </div>
             ) : (
               <ProductGrid products={paged} />
@@ -491,7 +480,8 @@ function CatalogueInner() {
             onClick={() => setDrawerOpen(true)}
             className="w-full py-3 rounded-full bg-[var(--goun-forest)] text-white goun-font-ui font-medium min-h-tap"
           >
-            🔍 {copy.catalogue.filterBtn as string}
+            <Search className="w-4 h-4 inline-block me-2" aria-hidden />
+            {copy.catalogue.filterBtn as string}
           </button>
         </div>
 

@@ -13,7 +13,7 @@ const copy = {
   ar: {
     brand: "Made in GON",
     search: "ابحث عن منتج، مدينة، حرفي...",
-    categories: ["الحرف اليدوية", "غذائي", "مستحضرات", "نسيج", "مجوهرات", "منتجات المنطقة", "ديكور", "جديد"],
+    categories: ["الحرف اليدوية", "منتجات غذائية", "التجميل", "النسيج", "المجوهرات", "الديكور", "منتجات المنطقة"],
     hero: {
       slides: [
         { title: "اكتشف منتجات أصيلة من قلب الجنوب", cta: "استكشف الكتالوج" },
@@ -43,6 +43,7 @@ const copy = {
     catalogue: {
       filter: "تصفية النتائج",
       reset: "إعادة تعيين الفلاتر",
+      empty: "لا توجد منتجات حالياً. عد لاحقاً!",
       results: "منتج",
       sort: ["الأكثر صلة", "السعر ↑", "السعر ↓", "جديد", "الأعلى تقييماً"],
       apply: "تطبيق",
@@ -73,7 +74,7 @@ const copy = {
   fr: {
     brand: "Made in GON",
     search: "Chercher un produit, artisan, ville...",
-    categories: ["Artisanat", "Alimentaire", "Cosmétique", "Textile", "Bijoux", "Terroir", "Décoration", "Nouveautés"],
+    categories: ["Artisanat", "Alimentaire", "Cosmétique", "Textile", "Bijoux", "Décoration", "Terroir"],
     hero: {
       slides: [
         { title: "Découvrez les produits authentiques du Guelmim-Oued Noun", cta: "Explorer le catalogue" },
@@ -104,6 +105,7 @@ const copy = {
     catalogue: {
       filter: "Filtrer les résultats",
       reset: "Réinitialiser les filtres",
+      empty: "Aucun produit pour le moment. Revenez bientôt !",
       results: "produits trouvés",
       sort: ["Pertinence", "Prix ↑", "Prix ↓", "Nouveautés", "Mieux notés"],
       apply: "Appliquer",
@@ -174,17 +176,6 @@ export const AI_FEATURES = [
       fr: "Artisans vérifiés, confiance garantie.",
     },
   },
-];
-
-export const FEATURED_PRODUCTS = [
-  { id: "1", nameAr: "زيت الأركان", nameFr: "Huile d'argan", city: "Guelmim", price: 180, rating: 4.9, image: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=600&q=80" },
-  { id: "2", nameAr: "عسل الجنوب", nameFr: "Miel de la région", city: "Tan-Tan", price: 95, rating: 4.8, image: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&q=80" },
-  { id: "3", nameAr: "بساط أمازيغي", nameFr: "Tapis berbère", city: "Assa-Zag", price: 1200, rating: 5, image: "https://images.unsplash.com/photo-1582735686739-7dcef31ad030?w=600&q=80" },
-  { id: "4", nameAr: "مجوهرات فضية", nameFr: "Bijoux en argent", city: "Sidi Ifni", price: 450, rating: 4.7, image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&q=80" },
-  { id: "5", nameAr: "تمر دقلة", nameFr: "Dattes", city: "Guelmim", price: 65, rating: 4.6, image: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=600&q=80" },
-  { id: "6", nameAr: "حناء طبيعية", nameFr: "Henné naturel", city: "Guelmim", price: 40, rating: 4.5, image: "https://images.unsplash.com/photo-1596755389378-cbeeda425ebf?w=600&q=80" },
-  { id: "7", nameAr: "صابون طبيعي", nameFr: "Savon naturel", city: "Tan-Tan", price: 35, rating: 4.8, image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600&q=80" },
-  { id: "8", nameAr: "جلد حرفي", nameFr: "Cuir artisanal", city: "Sidi Ifni", price: 320, rating: 4.9, image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80" },
 ];
 
 export const TESTIMONIALS = [

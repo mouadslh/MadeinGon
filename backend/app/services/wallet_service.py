@@ -218,19 +218,21 @@ async def get_wallet_stats(
     top_rows = await db.execute(
         select(
             Product.title_fr,
+            Product.title_ar,
             func.sum(OrderItem.total_price).label("revenue"),
             func.sum(OrderItem.quantity).label("units"),
         )
         .join(OrderItem, OrderItem.product_id == Product.id)
         .join(Order, Order.id == OrderItem.order_id)
         .where(seller_filter, sales_filter, Order.created_at >= since)
-        .group_by(Product.id, Product.title_fr)
+        .group_by(Product.id, Product.title_fr, Product.title_ar)
         .order_by(func.sum(OrderItem.total_price).desc())
         .limit(5)
     )
     top_products = [
         {
             "product_name": row.title_fr,
+            "product_name_ar": row.title_ar,
             "revenue": float(row.revenue or 0),
             "units_sold": int(row.units or 0),
         }

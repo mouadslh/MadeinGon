@@ -16,6 +16,7 @@ import {
   CreditCard,
 } from "lucide-react";
 import { api, formatPrice } from "@/lib/api";
+import { getProductTitle } from "@/lib/product-title";
 
 type DeliveryInfo = {
   provider?: string;
@@ -31,7 +32,12 @@ export type OrderDetail = {
   buyer_name: string;
   buyer_phone: string;
   buyer_address?: { city?: string; address?: string; zip?: string };
-  items: { product_name: string; quantity: number; unit_price?: number }[];
+  items: {
+    product_name: string;
+    product_name_ar?: string | null;
+    quantity: number;
+    unit_price?: number;
+  }[];
   total_amount: number;
   payment_method: string;
   payment_status: string;
@@ -284,10 +290,15 @@ export function OrderTrackingSidebar({ order, open, onClose, locale, rtl = false
               {t("Articles", "المنتجات")}
             </p>
             <ul className="space-y-2">
-              {order.items.map((item, i) => (
+              {order.items.map((item, i) => {
+                const itemTitle = getProductTitle(
+                  { title_fr: item.product_name, title_ar: item.product_name_ar },
+                  locale
+                );
+                return (
                 <li key={i} className="flex justify-between text-sm">
-                  <span className="text-night/80">
-                    {item.product_name} × {item.quantity}
+                  <span className={`text-night/80 ${rtl ? "goun-font-ar" : ""}`}>
+                    {itemTitle} × {item.quantity}
                   </span>
                   {item.unit_price != null && (
                     <span className="font-mono text-night/60">
@@ -295,7 +306,8 @@ export function OrderTrackingSidebar({ order, open, onClose, locale, rtl = false
                     </span>
                   )}
                 </li>
-              ))}
+              );
+              })}
             </ul>
             <div className="flex justify-between mt-3 pt-3 border-t border-dune/30 text-sm font-semibold">
               <span className="flex items-center gap-1 text-night/70">

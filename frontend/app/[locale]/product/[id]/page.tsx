@@ -11,6 +11,7 @@ import { useFavorite } from "@/hooks/useFavorite";
 import { Button } from "@/components/ui/Button";
 import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 import { RemoteImage } from "@/components/ui/RemoteImage";
+import { getProductDescription, getProductTitle } from "@/lib/product-title";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -37,12 +38,18 @@ export default function ProductDetailPage() {
     return <p className="p-8">{locale === "ar" ? "جاري التحميل..." : "Chargement..."}</p>;
   }
 
-  const title = locale === "ar" && product.title_ar ? String(product.title_ar) : String(product.title_fr);
+  const title = getProductTitle({
+    title_fr: String(product.title_fr),
+    title_ar: product.title_ar as string | null | undefined,
+  }, locale);
   const images = (product.images as { url: string }[]) || [];
-  const description =
-    locale === "ar" && product.description_ar
-      ? String(product.description_ar)
-      : String(product.description_fr || "");
+  const description = getProductDescription(
+    {
+      description_fr: product.description_fr as string | null | undefined,
+      description_ar: product.description_ar as string | null | undefined,
+    },
+    locale
+  );
 
   const ensureAuth = (msg: string): boolean => {
     if (authed) return true;

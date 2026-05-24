@@ -1,10 +1,12 @@
 "use client";
 
 import { formatPrice } from "@/lib/api";
+import { getProductTitle } from "@/lib/product-title";
 import { Trophy } from "lucide-react";
 
 type TopProduct = {
   product_name: string;
+  product_name_ar?: string | null;
   revenue: number;
   units_sold: number;
 };
@@ -36,12 +38,17 @@ export function TopProductsCard({ products, locale, rtl = false }: Props) {
         </p>
       ) : (
         <ul className="space-y-4">
-          {products.map((p, i) => (
+          {products.map((p, i) => {
+            const name = getProductTitle(
+              { title_fr: p.product_name, title_ar: p.product_name_ar },
+              locale
+            );
+            return (
             <li key={`${p.product_name}-${i}`}>
               <div className="flex items-start justify-between gap-2 mb-1">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-base shrink-0">{MEDALS[i] ?? `${i + 1}.`}</span>
-                  <span className="text-sm font-medium truncate">{p.product_name}</span>
+                  <span className={`text-sm font-medium truncate ${rtl ? "goun-font-ar" : ""}`}>{name}</span>
                 </div>
                 <span className="text-sm font-mono text-[var(--goun-earth)] shrink-0">
                   {formatPrice(p.revenue, locale)}
@@ -57,7 +64,8 @@ export function TopProductsCard({ products, locale, rtl = false }: Props) {
                 {p.units_sold} {t("unité(s) vendue(s)", "وحدة مباعة")}
               </p>
             </li>
-          ))}
+          );
+          })}
         </ul>
       )}
     </article>

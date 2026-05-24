@@ -74,6 +74,7 @@ async def _build_order_out(db: AsyncSession, order: Order) -> SellerOrderOut:
             {
                 "product_id": item.product_id,
                 "product_name": product.title_fr if product else "Produit",
+                "product_name_ar": product.title_ar if product and product.title_ar else None,
                 "product_image": img_url,
                 "quantity": item.quantity,
                 "unit_price": float(item.unit_price),

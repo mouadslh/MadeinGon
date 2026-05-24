@@ -11,6 +11,7 @@ import { formatPrice } from "@/lib/api";
 import { useCartStore } from "@/lib/cart-store";
 import { isAuthenticated } from "@/lib/auth";
 import { useFavorite } from "@/hooks/useFavorite";
+import { getProductTitle } from "@/lib/product-title";
 
 export interface ProductCardData {
   id: string;
@@ -20,6 +21,7 @@ export interface ProductCardData {
   price: number;
   image_url?: string | null;
   authenticity_badge?: boolean;
+  category_slug?: string | null;
   reason?: string;
 }
 
@@ -37,7 +39,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
     setAuthed(isAuthenticated());
   }, [pathname]);
 
-  const title = locale === "ar" && product.title_ar ? product.title_ar : product.title_fr;
+  const title = getProductTitle(product, locale);
 
   const ensureAuth = (message: string): boolean => {
     if (authed) return true;

@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
@@ -24,8 +25,20 @@ from app.services.upload_service import upload_file
 router = APIRouter(prefix="/products", tags=["products"])
 
 
+def _category_slug_if_loaded(p: Product) -> str | None:
+    """Évite le lazy-load async (MissingGreenlet) si category n'est pas préchargée."""
+    if "category" in sa_inspect(p).unloaded:
+        return None
+    cat = p.__dict__.get("category")
+    return cat.slug if cat else None
+
+
 def _to_response(p: Product) -> ProductResponse:
-    return ProductResponse.model_validate(p)
+    base = ProductResponse.model_validate(p)
+    slug = _category_slug_if_loaded(p)
+    if slug:
+        return base.model_copy(update={"category_slug": slug})
+    return base
 
 
 @router.get("", response_model=ProductListResponse)
@@ -54,7 +67,7 @@ async def list_products(
 
     q = (
         select(Product)
-        .options(selectinload(Product.images))
+        .options(selectinload(Product.images), selectinload(Product.category))
         .where(
             Product.is_active.is_(True),
             Product.is_moderated.is_(True),
@@ -68,6 +81,8 @@ async def list_products(
         cid = cat_row.scalar_one_or_none()
         if cid:
             q = q.where(Product.category_id == cid)
+        else:
+            return ProductListResponse(items=[], total=0, page=page, page_size=page_size)
     elif category_id is not None:
         q = q.where(Product.category_id == category_id)
     if search:
@@ -131,7 +146,7 @@ async def my_products(
 
     q = (
         select(Product)
-        .options(selectinload(Product.images))
+        .options(selectinload(Product.images), selectinload(Product.category))
         .where(Product.seller_id == profile.id)
         .order_by(Product.created_at.desc())
     )
@@ -156,7 +171,7 @@ async def get_product(
 ):
     result = await db.execute(
         select(Product)
-        .options(selectinload(Product.images))
+        .options(selectinload(Product.images), selectinload(Product.category))
         .where(Product.id == product_id)
     )
     product = result.scalar_one_or_none()
@@ -280,7 +295,7 @@ async def _own_product(db: AsyncSession, user: User, product_id: UUID) -> Produc
 
     result = await db.execute(
         select(Product)
-        .options(selectinload(Product.images))
+        .options(selectinload(Product.images), selectinload(Product.category))
         .where(Product.id == product_id, Product.seller_id == profile.id)
     )
     product = result.scalar_one_or_none()

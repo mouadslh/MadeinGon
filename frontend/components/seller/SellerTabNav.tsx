@@ -9,14 +9,13 @@ const TABS: {
   icon: typeof LayoutDashboard;
   fr: string;
   ar: string;
-  emoji: string;
   external?: boolean;
 }[] = [
-  { href: "dashboard", icon: LayoutDashboard, fr: "Tableau de bord", ar: "لوحة التحكم", emoji: "📊" },
-  { href: "products", icon: Package, fr: "Mes produits", ar: "منتجاتي", emoji: "📦" },
-  { href: "products/new", icon: PlusCircle, fr: "Ajouter un produit", ar: "إضافة منتج", emoji: "➕", external: true },
-  { href: "orders", icon: ShoppingCart, fr: "Commandes", ar: "الطلبات", emoji: "🧾" },
-  { href: "settings/profile", icon: UserCircle, fr: "Mon profil", ar: "الملف الشخصي", emoji: "👤" },
+  { href: "dashboard", icon: LayoutDashboard, fr: "Tableau de bord", ar: "لوحة التحكم" },
+  { href: "products", icon: Package, fr: "Mes produits", ar: "منتجاتي" },
+  { href: "products/new", icon: PlusCircle, fr: "Ajouter un produit", ar: "إضافة منتج", external: true },
+  { href: "orders", icon: ShoppingCart, fr: "Commandes", ar: "الطلبات" },
+  { href: "settings/profile", icon: UserCircle, fr: "Mon profil", ar: "الملف الشخصي" },
 ];
 
 export function SellerTabNav() {
@@ -48,8 +47,7 @@ export function SellerTabNav() {
                 : "text-[var(--goun-charcoal)] hover:bg-[var(--goun-mist)]/80"
             }`}
           >
-            <span className="hidden sm:inline">{tab.emoji}</span>
-            <Icon className="w-4 h-4 sm:hidden" />
+            <Icon className="w-4 h-4 shrink-0" aria-hidden />
             <span>{rtl ? tab.ar : tab.fr}</span>
           </Link>
         );

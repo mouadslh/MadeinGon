@@ -1,14 +1,10 @@
 "use client";
 
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { useLocale } from "next-intl";
-const CATEGORY_ICONS: Record<string, string> = {
-  artisanat: "🏺",
-  alimentaire: "🌾",
-  cosmetique: "🌿",
-  textile: "🧵",
-  bijoux: "💎",
-};
+import { LayoutGrid } from "lucide-react";
+import { CategoryIcon } from "@/components/categories/CategoryIcon";
 
 export interface CategoryItem {
   slug: string;
@@ -32,7 +28,7 @@ export function CategoryFilter({
       <FilterChip
         href={basePath}
         label={locale === "ar" ? "الكل" : "Tout"}
-        icon="✨"
+        icon={<LayoutGrid className="w-5 h-5" aria-hidden />}
         active={!activeSlug}
       />
       {categories.map((cat) => {
@@ -42,7 +38,7 @@ export function CategoryFilter({
             key={cat.slug}
             href={`${basePath}?category=${cat.slug}`}
             label={name}
-            icon={CATEGORY_ICONS[cat.slug] ?? "📦"}
+            icon={<CategoryIcon slug={cat.slug} className="w-5 h-5" />}
             active={activeSlug === cat.slug}
           />
         );
@@ -59,7 +55,7 @@ function FilterChip({
 }: {
   href: string;
   label: string;
-  icon: string;
+  icon: ReactNode;
   active: boolean;
 }) {
   return (
@@ -71,9 +67,7 @@ function FilterChip({
           : "card-surface text-night hover:ring-2 hover:ring-ochre/40"
       }`}
     >
-      <span className="text-xl" aria-hidden>
-        {icon}
-      </span>
+      {icon}
       <span className="font-medium whitespace-nowrap">{label}</span>
     </Link>
   );

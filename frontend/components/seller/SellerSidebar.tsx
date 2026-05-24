@@ -19,6 +19,8 @@ import {
 import { clearStoredTokens } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { Logo } from "@/components/layout/Logo";
+import { LanguageSwitcher } from "@/components/goun/LanguageSwitcher";
+import { localeToGounLang } from "@/lib/goun-copy";
 
 type Me = { full_name?: string };
 type SellerProfile = { shop_name?: string };
@@ -28,6 +30,8 @@ export function SellerSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const locale = params.locale as string;
+  const rtl = locale === "ar";
+  const gounLang = localeToGounLang(locale);
   const [me, setMe] = useState<Me>({});
   const [profile, setProfile] = useState<SellerProfile>({});
   const [pendingOrders, setPendingOrders] = useState(0);
@@ -96,10 +100,18 @@ export function SellerSidebar() {
           <div className="min-w-0">
             <p className="font-medium text-sm truncate">{label}</p>
             <span className="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-night/10">
-              <Store size={10} className="mr-1" />
-              Artisan
+              <Store size={10} className={rtl ? "ms-1" : "me-1"} />
+              {rtl ? "حرفي" : "Artisan"}
             </span>
           </div>
+        </div>
+        <div className="px-1">
+          <p className="text-xs text-night/50 mb-1.5 px-1">{rtl ? "اللغة" : "Langue"}</p>
+          <LanguageSwitcher
+            active={gounLang}
+            variant="sidebar"
+            ariaLabel={rtl ? "اللغة" : "Langue"}
+          />
         </div>
         <button
           onClick={logout}

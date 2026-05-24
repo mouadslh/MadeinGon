@@ -3,6 +3,8 @@
  * Images : frontend/public/images/ (voir public/images/README.md)
  */
 import { SITE_IMAGES } from "@/lib/site-images";
+import { PRODUCT_CATEGORIES } from "@/lib/categories";
+
 export type Lang = "fr" | "ar";
 
 export const SUPPORTED_LANGS: Lang[] = ["ar", "fr"];
@@ -22,17 +24,12 @@ export const ANNOUNCEMENT: Record<Lang, string> = {
   ar: "🚚 توصيل إلى جميع أقاليم جهة كلميم واد نون",
 };
 
-export const CATEGORIES = [
-  { slug: "artisanat",   label_fr: "Artisanat",   label_ar: "الحرف اليدوية" },
-  { slug: "alimentaire", label_fr: "Alimentaire", label_ar: "منتجات غذائية" },
-  { slug: "cosmetique",  label_fr: "Cosmétique",  label_ar: "التجميل" },
-  { slug: "textile",     label_fr: "Textile",     label_ar: "النسيج" },
-  { slug: "bijoux",      label_fr: "Bijoux",      label_ar: "المجوهرات" },
-  { slug: "terroir",     label_fr: "Terroir",     label_ar: "منتجات المنطقة" },
-  { slug: "deco",        label_fr: "Déco",        label_ar: "الديكور" },
-  { slug: "nouveautes",  label_fr: "🆕 Nouveautés", label_ar: "🆕 جديد" },
-  { slug: "offres",      label_fr: "🔥 Offres",   label_ar: "🔥 عروض" },
-];
+/** Navigation header — slugs identiques à la base `categories`. */
+export const CATEGORIES = PRODUCT_CATEGORIES.map((c) => ({
+  slug: c.slug,
+  label_fr: c.name_fr,
+  label_ar: c.name_ar,
+}));
 
 export const HERO_SLIDES = [
   {

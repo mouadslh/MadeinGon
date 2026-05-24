@@ -60,6 +60,7 @@ class ProductResponse(BaseModel):
     keywords: Optional[List[str]] = None
     views_count: int
     images: List[ProductImageResponse] = Field(default_factory=list)
+    category_slug: Optional[str] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
