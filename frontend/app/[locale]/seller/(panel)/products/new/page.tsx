@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { AddProductWizard } from "@/components/seller/AddProductWizard";
-import { SellerTabNav } from "@/components/seller/SellerTabNav";
 
 export default function SellerNewProductPage() {
   const params = useParams();
@@ -13,7 +12,6 @@ export default function SellerNewProductPage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <SellerTabNav />
       <Link
         href={`/${locale}/seller/products`}
         className="inline-flex items-center gap-2 text-[var(--goun-forest)] hover:text-[var(--goun-earth)] mb-6 min-h-tap goun-font-ui text-sm"

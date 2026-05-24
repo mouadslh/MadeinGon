@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
-import { SellerTabNav } from "./SellerTabNav";
 import { GounFonts } from "@/components/goun/GounFonts";
 import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 
@@ -45,7 +44,6 @@ export function SellerProfileView() {
   return (
     <GounFonts rtl={rtl}>
       <div dir={rtl ? "rtl" : "ltr"} className="max-w-2xl">
-        <SellerTabNav />
         <h1 className={`text-2xl text-[var(--goun-forest)] mb-6 ${rtl ? "goun-font-ar" : "goun-font-display"}`}>
           {t("Mon profil", "ملفي الشخصي")}
         </h1>

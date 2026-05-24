@@ -16,6 +16,8 @@ from app.models.seller import SellerProfile
 from app.models.user import User
 from app.schemas.seller_orders import CancelOrderBody, SellerOrderOut, SellerOrdersListResponse
 from app.services.delivery.amana import AmanaService
+from app.services.delivery.fulfill import auto_fulfill_order
+from app.services.delivery.label_pdf import generate_delivery_label_pdf
 from app.services.notifications.seller_notif import SellerNotificationService
 from app.utils.order_helpers import (
     API_TO_STATUS,
@@ -185,8 +187,6 @@ async def get_order(order_id: UUID, user: SellerUser, db: AsyncSession = Depends
 
 @router.patch("/{order_id}/confirm", response_model=SellerOrderOut)
 async def confirm_order(order_id: UUID, user: SellerUser, db: AsyncSession = Depends(get_db)):
-    from datetime import date, timedelta
-
     profile = await _get_profile(db, user.id)
     result = await db.execute(
         select(Order).options(selectinload(Order.items)).where(Order.id == order_id, Order.seller_id == profile.id)
@@ -197,23 +197,8 @@ async def confirm_order(order_id: UUID, user: SellerUser, db: AsyncSession = Dep
     if order.status not in ("PENDING",):
         raise HTTPException(status_code=400, detail="Order cannot be confirmed")
 
-    if not order.reference:
-        order.reference = generate_order_reference(order.id, order.created_at)
-
     addr = await db.get(Address, order.address_id)
-    amana = AmanaService()
-    shipment = await amana.create_shipment(order, profile, addr)
-    order.status = "CONFIRMED"
-    order.carrier = "amana"
-    order.amana_shipment_id = shipment.shipment_id
-    order.amana_tracking_number = shipment.tracking_number
-    order.amana_tracking_url = shipment.tracking_url
-    order.tracking_number = shipment.tracking_number
-    order.amana_status = "pending"
-    order.amana_estimated_delivery = date.today() + timedelta(days=3)
-
-    notif = SellerNotificationService(db)
-    await notif.notify_order_shipped(order, shipment.tracking_number)
+    await auto_fulfill_order(db, order, profile, addr)
     await db.flush()
     return await _build_order_out(db, order)
 
@@ -264,12 +249,65 @@ async def get_tracking(order_id: UUID, user: SellerUser, db: AsyncSession = Depe
 @router.get("/{order_id}/label")
 async def get_label(order_id: UUID, user: SellerUser, db: AsyncSession = Depends(get_db)):
     profile = await _get_profile(db, user.id)
-    result = await db.execute(select(Order).where(Order.id == order_id, Order.seller_id == profile.id))
+    result = await db.execute(
+        select(Order).options(selectinload(Order.items)).where(Order.id == order_id, Order.seller_id == profile.id)
+    )
     order = result.scalar_one_or_none()
-    if not order or not order.amana_shipment_id:
-        raise HTTPException(status_code=404, detail="Label not available")
-    amana = AmanaService()
-    pdf = await amana.get_label_pdf(order.amana_shipment_id)
-    return Response(content=pdf, media_type="application/pdf", headers={
-        "Content-Disposition": f'attachment; filename="bon-{order.reference or order_id}.pdf"'
-    })
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.status == "CANCELLED":
+        raise HTTPException(status_code=400, detail="Order cancelled")
+
+    if not order.amana_shipment_id and order.status in ("PENDING", "CONFIRMED"):
+        addr = await db.get(Address, order.address_id)
+        if addr:
+            await auto_fulfill_order(db, order, profile, addr)
+            await db.flush()
+
+    buyer = await db.get(User, order.buyer_id)
+    addr = await db.get(Address, order.address_id)
+    ref = order.reference or generate_order_reference(order.id, order.created_at)
+
+    product_ids = [item.product_id for item in order.items]
+    products_by_id: dict = {}
+    if product_ids:
+        prod_rows = await db.execute(select(Product).where(Product.id.in_(product_ids)))
+        products_by_id = {p.id: p for p in prod_rows.scalars().all()}
+
+    item_data = []
+    for item in order.items:
+        product = products_by_id.get(item.product_id)
+        item_data.append(
+            {
+                "product_name": product.title_fr if product else "Produit",
+                "quantity": item.quantity,
+                "subtotal": float(item.total_price),
+            }
+        )
+
+    label_kwargs = dict(
+        shop_name=profile.shop_name or "Artisan",
+        buyer_name=buyer.full_name if buyer else "",
+        buyer_phone=addr.phone if addr else "",
+        address_line=addr.street if addr else "",
+        city=addr.city if addr else "",
+        zip_code=addr.postal_code or "" if addr else "",
+        tracking_number=order.amana_tracking_number,
+        items=item_data,
+    )
+
+    pdf: bytes
+    if order.amana_shipment_id and AmanaService.API_KEY:
+        amana = AmanaService()
+        try:
+            pdf = await amana.get_label_pdf(order.amana_shipment_id)
+        except Exception:
+            pdf = generate_delivery_label_pdf(order, **label_kwargs)
+    else:
+        pdf = generate_delivery_label_pdf(order, **label_kwargs)
+
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="bon-{ref}.pdf"'},
+    )

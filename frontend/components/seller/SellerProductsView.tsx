@@ -6,7 +6,6 @@ import { useParams } from "next/navigation";
 import { RemoteImage } from "@/components/ui/RemoteImage";
 import { Package, Plus, Pencil, Trash2, Search } from "lucide-react";
 import { api, formatPrice } from "@/lib/api";
-import { SellerTabNav } from "./SellerTabNav";
 import { GounFonts } from "@/components/goun/GounFonts";
 
 type Product = {
@@ -46,7 +45,6 @@ export function SellerProductsView() {
   return (
     <GounFonts rtl={rtl}>
       <div dir={rtl ? "rtl" : "ltr"}>
-        <SellerTabNav />
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
           <h1 className={`text-2xl text-[var(--goun-forest)] flex items-center gap-2 ${rtl ? "goun-font-ar" : "goun-font-display"}`}>
             <Package size={24} />

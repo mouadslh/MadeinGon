@@ -2,32 +2,33 @@
 
 import Image from "next/image";
 import { ABOUT } from "./copy";
+import { SITE_IMAGES } from "@/lib/site-images";
 
 type Props = { locale: "fr" | "ar" };
 
 const POLAROIDS = [
   {
-    src: "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=500&q=80",
-    label_fr: "Désert d'Assa-Zag",
-    label_ar: "صحراء أسا الزاك",
+    src: SITE_IMAGES.carousel.about1,
+    label_fr: "Récolte des dattes",
+    label_ar: "قطف التمور",
     rotate: -4,
   },
   {
-    src: "https://images.unsplash.com/photo-1571805529673-0f56b922b359?w=500&q=80",
+    src: SITE_IMAGES.carousel.about2,
     label_fr: "Argan, Guelmim",
     label_ar: "أركان، كلميم",
     rotate: 2,
   },
   {
-    src: "https://images.unsplash.com/photo-1530653333484-8542d3a0cb1d?w=500&q=80",
-    label_fr: "Tan-Tan, tisseuses",
-    label_ar: "نساجات تان تان",
+    src: SITE_IMAGES.carousel.about3,
+    label_fr: "Coopérative locale",
+    label_ar: "تعاونية محلية",
     rotate: -2,
   },
   {
-    src: "https://images.unsplash.com/photo-1581922814484-0b48460b7010?w=500&q=80",
-    label_fr: "Souk de Sidi Ifni",
-    label_ar: "سوق سيدي إفني",
+    src: SITE_IMAGES.carousel.about4,
+    label_fr: "Poterie artisanale",
+    label_ar: "فخار يدوي",
     rotate: 4,
   },
 ];

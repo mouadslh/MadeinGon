@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { clearStoredTokens } from "@/lib/auth";
 import { api } from "@/lib/api";
+import { Logo } from "@/components/layout/Logo";
 
 type Me = { full_name?: string };
 type SellerProfile = { shop_name?: string };
@@ -53,7 +54,7 @@ export function SellerSidebar() {
   const navItems = [
     { href: `/${locale}/seller/dashboard`, label: locale === "ar" ? "لوحة التحكم" : "Tableau de bord", icon: LayoutDashboard },
     { href: `/${locale}/seller/products`, label: locale === "ar" ? "منتجاتي" : "Mes Produits", icon: Package, badge: undefined as number | undefined },
-    { href: `/${locale}/products/new`, label: locale === "ar" ? "منتج جديد" : "Nouveau produit", icon: Package },
+    { href: `/${locale}/seller/products/new`, label: locale === "ar" ? "منتج جديد" : "Nouveau produit", icon: Package },
     { href: `/${locale}/seller/orders`, label: locale === "ar" ? "الطلبات" : "Commandes", icon: ShoppingCart, badge: pendingOrders || undefined },
     { href: `/${locale}/seller/wallet`, label: locale === "ar" ? "المحفظة" : "Wallet & Revenus", icon: Wallet },
     { href: `/${locale}/seller/notifications`, label: locale === "ar" ? "الإشعارات" : "Notifications", icon: Bell, badge: unreadNotifs || undefined },
@@ -62,8 +63,10 @@ export function SellerSidebar() {
   ];
 
   return (
-    <aside className="w-64 bg-sand border-r border-dune/70 min-h-screen p-3 flex flex-col shrink-0">
-      <div className="font-display text-xl text-ochre mb-4">Made in Goun</div>
+    <aside className="w-64 h-full bg-sand border-r border-dune/70 p-3 flex flex-col shrink-0 overflow-y-auto">
+      <div className="mb-4 px-1">
+        <Logo size="md" href={`/${locale}/seller/dashboard`} />
+      </div>
       <nav className="space-y-1 flex-1">
         {navItems.map((item) => {
           const Icon = item.icon;

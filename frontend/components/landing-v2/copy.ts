@@ -1,7 +1,8 @@
 /**
  * Made in GON — Landing v2 copy
- * Toutes les chaînes user-facing, FR + AR uniquement. Pas de Lorem Ipsum.
+ * Images : frontend/public/images/ (voir public/images/README.md)
  */
+import { SITE_IMAGES } from "@/lib/site-images";
 export type Lang = "fr" | "ar";
 
 export const SUPPORTED_LANGS: Lang[] = ["ar", "fr"];
@@ -36,7 +37,7 @@ export const CATEGORIES = [
 export const HERO_SLIDES = [
   {
     id: "buyer",
-    image: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=1920&q=80",
+    image: SITE_IMAGES.carousel.heroBuyer,
     headline_ar: "اكتشف منتجات أصيلة من قلب جهة كلميم وادنون",
     headline_fr: "Découvrez l'âme de Guelmim-Oued Noun",
     sub_ar: "أركان، عسل، زرابي، مجوهرات — مباشرة من أيدي الحرفيين.",
@@ -48,7 +49,7 @@ export const HERO_SLIDES = [
   },
   {
     id: "seller",
-    image: "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=1920&q=80",
+    image: SITE_IMAGES.carousel.heroSeller,
     headline_ar: "بيع منتجاتك بسهولة، حتى بدون خبرة رقمية",
     headline_fr: "Vendez sans friction. L'IA fait le reste.",
     sub_ar: "أضف منتجاً بالتحدث بالدارجة. صورك، تتحسن تلقائياً.",
@@ -60,7 +61,7 @@ export const HERO_SLIDES = [
   },
   {
     id: "ai",
-    image: "https://images.unsplash.com/photo-1517816743773-6e0fd518b4a6?w=1920&q=80",
+    image: SITE_IMAGES.carousel.heroAi,
     headline_ar: "الذكاء الاصطناعي في خدمة الحرفي المغربي",
     headline_fr: "L'IA au service de l'artisanat marocain",
     sub_ar: "مساعد صوتي، تحسين الصور، توصيات مخصصة — كل شيء مدمج.",

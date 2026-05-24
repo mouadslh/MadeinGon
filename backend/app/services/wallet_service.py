@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
@@ -10,7 +11,110 @@ from app.models.seller import SellerProfile
 from app.models.wallet import SellerWallet, WalletTransaction
 from app.utils.order_helpers import net_order_amount
 
-DEFAULT_COMMISSION = Decimal("0.05")
+DEFAULT_COMMISSION = Decimal("0")
+
+ACTIVE_SALE_STATUSES = ("PENDING", "CONFIRMED", "SHIPPED", "DELIVERED")
+PENDING_SALE_STATUSES = ("PENDING", "CONFIRMED", "SHIPPED")
+
+
+async def compute_wallet_balances(db: AsyncSession, profile: SellerProfile) -> dict[str, float]:
+    """Derive wallet totals from real orders (source of truth for seller UI)."""
+    seller_filter = Order.seller_id == profile.id
+    active = Order.status.in_(ACTIVE_SALE_STATUSES)
+
+    total_earned = await db.scalar(
+        select(func.coalesce(func.sum(Order.subtotal), 0)).where(seller_filter, active)
+    )
+    available = await db.scalar(
+        select(func.coalesce(func.sum(Order.subtotal), 0)).where(
+            seller_filter, Order.status == "DELIVERED"
+        )
+    )
+    pending = await db.scalar(
+        select(func.coalesce(func.sum(Order.subtotal), 0)).where(
+            seller_filter, Order.status.in_(PENDING_SALE_STATUSES)
+        )
+    )
+    return {
+        "total_earned": float(total_earned or 0),
+        "available": float(available or 0),
+        "total_pending": float(pending or 0),
+    }
+
+
+async def list_order_transactions(
+    db: AsyncSession, profile: SellerProfile, limit: int = 10, offset: int = 0
+) -> tuple[list[dict], int]:
+    """Build transaction history from orders when wallet txs are missing."""
+    base = (
+        select(Order)
+        .where(Order.seller_id == profile.id, Order.status.in_(ACTIVE_SALE_STATUSES))
+        .order_by(Order.created_at.desc())
+    )
+    total = await db.scalar(
+        select(func.count()).select_from(Order).where(
+            Order.seller_id == profile.id, Order.status.in_(ACTIVE_SALE_STATUSES)
+        )
+    ) or 0
+    result = await db.execute(base.offset(offset).limit(limit))
+    orders = result.scalars().all()
+
+    items = []
+    for order in orders:
+        items_r = await db.execute(
+            select(Product.title_fr)
+            .join(OrderItem, OrderItem.product_id == Product.id)
+            .where(OrderItem.order_id == order.id)
+        )
+        products = [row[0] for row in items_r.all()]
+        ref = order.reference or str(order.id)[:8]
+        items.append({
+            "id": str(order.id),
+            "order_id": str(order.id),
+            "type": "sale",
+            "amount": float(order.subtotal),
+            "description": f"Vente {ref}",
+            "products": products,
+            "created_at": order.created_at.isoformat(),
+            "status": order.status.lower(),
+        })
+    return items, total
+
+
+async def list_orders_for_export(
+    db: AsyncSession, profile: SellerProfile, since: datetime | None = None
+) -> list[dict]:
+    """All sales rows for CSV export, sourced from orders."""
+    q = (
+        select(Order)
+        .where(Order.seller_id == profile.id, Order.status.in_(ACTIVE_SALE_STATUSES))
+        .order_by(Order.created_at.desc())
+    )
+    if since:
+        q = q.where(Order.created_at >= since)
+
+    result = await db.execute(q)
+    orders = result.scalars().all()
+    rows = []
+    for order in orders:
+        items_r = await db.execute(
+            select(Product.title_fr)
+            .join(OrderItem, OrderItem.product_id == Product.id)
+            .where(OrderItem.order_id == order.id)
+        )
+        products = ", ".join(row[0] for row in items_r.all())
+        ref = order.reference or str(order.id)[:8]
+        rows.append({
+            "date": order.created_at.isoformat(),
+            "reference": ref,
+            "status": order.status.lower(),
+            "products": products,
+            "amount": float(order.subtotal),
+            "payment_method": (order.payment_method or "").lower(),
+            "order_id": str(order.id),
+            "description": f"Vente {ref}",
+        })
+    return rows
 
 
 async def get_or_create_wallet(db: AsyncSession, seller_user_id: UUID) -> SellerWallet:
@@ -33,14 +137,14 @@ async def credit_sale(
 ) -> WalletTransaction:
     wallet = await get_or_create_wallet(db, seller_user_id)
     gross = order.subtotal
-    net = net_order_amount(order, commission_rate)
+    net = net_order_amount(order)
 
     tx = WalletTransaction(
         seller_id=seller_user_id,
         order_id=order.id,
         type="sale",
         amount=gross,
-        commission_rate=commission_rate,
+        commission_rate=Decimal("0"),
         net_amount=net,
         description=f"Vente {order.reference or order.id}",
     )
@@ -72,26 +176,27 @@ async def get_wallet_stats(
     since = datetime.now(timezone.utc) - timedelta(days=period_days)
     prev_since = since - timedelta(days=period_days)
 
-    paid_filter = Order.payment_status == "PAID"
+    # Count confirmed sales (incl. COD en cours), not only payment_status=PAID
+    sales_filter = Order.status.in_(["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED"])
     seller_filter = Order.seller_id == profile.id
 
     revenue_q = await db.execute(
-        select(func.coalesce(func.sum(Order.subtotal - Order.commission_amount), 0)).where(
-            seller_filter, paid_filter, Order.created_at >= since
+        select(func.coalesce(func.sum(Order.subtotal), 0)).where(
+            seller_filter, sales_filter, Order.created_at >= since
         )
     )
     revenue_total = float(revenue_q.scalar() or 0)
 
     prev_revenue_q = await db.execute(
-        select(func.coalesce(func.sum(Order.subtotal - Order.commission_amount), 0)).where(
-            seller_filter, paid_filter, Order.created_at >= prev_since, Order.created_at < since
+        select(func.coalesce(func.sum(Order.subtotal), 0)).where(
+            seller_filter, sales_filter, Order.created_at >= prev_since, Order.created_at < since
         )
     )
     prev_revenue = float(prev_revenue_q.scalar() or 0)
     growth = ((revenue_total - prev_revenue) / prev_revenue * 100) if prev_revenue else 0.0
 
     orders_count_q = await db.execute(
-        select(func.count()).select_from(Order).where(seller_filter, paid_filter, Order.created_at >= since)
+        select(func.count()).select_from(Order).where(seller_filter, sales_filter, Order.created_at >= since)
     )
     orders_count = orders_count_q.scalar() or 0
     avg_order_value = revenue_total / orders_count if orders_count else 0.0
@@ -99,9 +204,9 @@ async def get_wallet_stats(
     by_day_rows = await db.execute(
         select(
             func.date_trunc("day", Order.created_at).label("day"),
-            func.sum(Order.subtotal - Order.commission_amount).label("amount"),
+            func.sum(Order.subtotal).label("amount"),
         )
-        .where(seller_filter, paid_filter, Order.created_at >= since)
+        .where(seller_filter, sales_filter, Order.created_at >= since)
         .group_by("day")
         .order_by("day")
     )
@@ -118,7 +223,7 @@ async def get_wallet_stats(
         )
         .join(OrderItem, OrderItem.product_id == Product.id)
         .join(Order, Order.id == OrderItem.order_id)
-        .where(seller_filter, paid_filter, Order.created_at >= since)
+        .where(seller_filter, sales_filter, Order.created_at >= since)
         .group_by(Product.id, Product.title_fr)
         .order_by(func.sum(OrderItem.total_price).desc())
         .limit(5)

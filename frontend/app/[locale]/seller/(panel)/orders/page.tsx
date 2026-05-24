@@ -3,31 +3,22 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { api, formatPrice } from "@/lib/api";
-import { SellerTabNav } from "@/components/seller/SellerTabNav";
 import { GounFonts } from "@/components/goun/GounFonts";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Banknote, CreditCard, Package } from "lucide-react";
-
-type OrderRow = {
-  id: string;
-  reference: string;
-  buyer_name: string;
-  buyer_phone: string;
-  buyer_address?: { city?: string; address?: string };
-  items: { product_name: string; quantity: number }[];
-  total_amount: number;
-  payment_method: string;
-  payment_status: string;
-  order_status: string;
-  created_at: string;
-};
+import {
+  OrderTrackingSidebar,
+  type OrderDetail,
+} from "@/components/seller/OrderTrackingSidebar";
+import { Banknote, CreditCard, ChevronRight, Package } from "lucide-react";
 
 export default function SellerOrdersPage() {
   const params = useParams();
   const locale = params.locale as string;
   const rtl = locale === "ar";
-  const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [orders, setOrders] = useState<OrderDetail[]>([]);
+  const [selected, setSelected] = useState<OrderDetail | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,7 +36,7 @@ export default function SellerOrdersPage() {
 
   const statusLabel = (s: string) => {
     const map: Record<string, string> = {
-      pending: t("En attente", "قيد الانتظار"),
+      pending: t("Préparation", "قيد التحضير"),
       confirmed: t("Confirmée", "مؤكدة"),
       shipped: t("Expédiée", "مُرسَلة"),
       delivered: t("Livrée", "مُسلّمة"),
@@ -54,10 +45,18 @@ export default function SellerOrdersPage() {
     return map[s] ?? s;
   };
 
+  const openOrder = (order: OrderDetail) => {
+    setSelected(order);
+    setSidebarOpen(true);
+  };
+
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+  };
+
   return (
     <GounFonts rtl={rtl}>
       <div dir={rtl ? "rtl" : "ltr"}>
-        <SellerTabNav />
         <h1 className="text-2xl text-[var(--goun-forest)] mb-6 goun-font-display flex items-center gap-2">
           <Package size={24} />
           {t("Mes commandes", "طلباتي")}
@@ -84,9 +83,23 @@ export default function SellerOrdersPage() {
                       {o.buyer_phone ? ` · ${o.buyer_phone}` : ""}
                     </p>
                   </div>
-                  <Badge variant={o.order_status === "delivered" ? "success" : "warning"}>
-                    {statusLabel(o.order_status)}
-                  </Badge>
+                  <button
+                    type="button"
+                    onClick={() => openOrder(o)}
+                    className="inline-flex items-center gap-1 group cursor-pointer"
+                    aria-label={t("Voir le statut de livraison", "عرض حالة التوصيل")}
+                  >
+                    <Badge
+                      variant={o.order_status === "delivered" ? "success" : "warning"}
+                      className="group-hover:ring-2 group-hover:ring-ochre/50 transition-shadow"
+                    >
+                      {statusLabel(o.order_status)}
+                    </Badge>
+                    <ChevronRight
+                      size={16}
+                      className={`text-night/40 group-hover:text-ochre transition-colors ${rtl ? "rotate-180" : ""}`}
+                    />
+                  </button>
                 </div>
 
                 <p className="text-sm text-night/60 mb-2">
@@ -115,15 +128,27 @@ export default function SellerOrdersPage() {
                   </p>
                 </div>
 
-                {o.buyer_address?.city && (
-                  <p className="text-xs text-night/50 mt-2">
-                    {t("Livraison", "التوصيل")}: {o.buyer_address.address}, {o.buyer_address.city}
-                  </p>
+                {o.delivery?.tracking_number && (
+                  <button
+                    type="button"
+                    onClick={() => openOrder(o)}
+                    className="text-xs text-ochre hover:underline mt-2 font-mono text-left"
+                  >
+                    Amana · {o.delivery.tracking_number}
+                  </button>
                 )}
               </Card>
             ))}
           </div>
         )}
+
+        <OrderTrackingSidebar
+          order={selected}
+          open={sidebarOpen}
+          onClose={closeSidebar}
+          locale={locale}
+          rtl={rtl}
+        />
       </div>
     </GounFonts>
   );

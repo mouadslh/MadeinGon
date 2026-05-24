@@ -195,12 +195,10 @@ class AmanaService:
                 order.payment_status = "PAID"
                 profile = await db.get(SellerProfile, order.seller_id)
                 if profile:
-                    rate = Decimal(str(settings.PLATFORM_COMMISSION_RATE))
-                    await credit_sale(db, profile.user_id, order, commission_rate=rate, pending=False)
+                    await credit_sale(db, profile.user_id, order, pending=False)
             elif order.payment_status == "PAID":
                 profile = await db.get(SellerProfile, order.seller_id)
                 if profile:
-                    rate = Decimal(str(settings.PLATFORM_COMMISSION_RATE))
-                    await credit_sale(db, profile.user_id, order, commission_rate=rate, pending=False)
+                    await credit_sale(db, profile.user_id, order, pending=False)
 
         await db.flush()

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { TrendingUp, TrendingDown, Package, ShoppingCart, Star, DollarSign } from "lucide-react";
 import { api, formatPrice } from "@/lib/api";
-import { SellerTabNav } from "./SellerTabNav";
 import { GounFonts } from "@/components/goun/GounFonts";
 
 interface DashboardStats {
@@ -89,7 +88,6 @@ export function SellerDashboardView() {
   return (
     <GounFonts rtl={rtl}>
       <div dir={rtl ? "rtl" : "ltr"}>
-        <SellerTabNav />
         <h1 className={`text-2xl text-[var(--goun-forest)] mb-1 ${rtl ? "goun-font-ar" : "goun-font-display"}`}>
           {stats.shop_name || t("Mon atelier GON", "ورشتي GON")}
         </h1>

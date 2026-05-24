@@ -20,6 +20,7 @@ from app.schemas.order import (
     OrderStatusUpdate,
     TrackingUpdate,
 )
+from app.services.delivery.fulfill import auto_fulfill_order
 from app.services.notifications.seller_notif import SellerNotificationService, check_stock_after_sale
 from app.utils.order_helpers import generate_order_reference
 
@@ -54,8 +55,7 @@ async def create_order(data: OrderCreate, user: BuyerUser, db: AsyncSession = De
         order_items.append((product, item.quantity, product.price, line_total))
         product.stock -= item.quantity
 
-    commission_rate = profile.commission_rate / Decimal("100")
-    commission_amount = (subtotal * commission_rate).quantize(Decimal("0.01"))
+    commission_amount = Decimal("0")
     total = subtotal + SHIPPING_FEE
 
     order = Order(
@@ -91,6 +91,8 @@ async def create_order(data: OrderCreate, user: BuyerUser, db: AsyncSession = De
 
     for product, qty, _, _ in order_items:
         await check_stock_after_sale(db, product.id)
+
+    await auto_fulfill_order(db, order, profile, addr)
 
     await db.flush()
     await db.refresh(order, ["items"])

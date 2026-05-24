@@ -52,6 +52,5 @@ def payment_status_api(status: str) -> str:
     return PAYMENT_STATUS_TO_API.get(status.upper(), status.lower())
 
 
-def net_order_amount(order: Order, commission_rate: Decimal = Decimal("0.05")) -> Decimal:
-    gross = order.subtotal - order.commission_amount
-    return (gross * (Decimal("1") - commission_rate)).quantize(Decimal("0.01"))
+def net_order_amount(order: Order, commission_rate: Decimal = Decimal("0")) -> Decimal:
+    return order.subtotal.quantize(Decimal("0.01"))
